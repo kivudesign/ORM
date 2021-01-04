@@ -1,6 +1,15 @@
 # Wepesi-ORM
 this is a simple model of an `ORM` writeen in php. it can ben modified as you want.
 
+# OVERVIEW
+this module as been develloped under this configuration. 
+- server    :wampserver 3.2.4 64bit
+- apache    :2.3.33
+- php       :7.3.13
+- phpmyadmin:5.0.4
+- mysql     :5.7.21
+
+in case some solution and method are not available be sure to use a version clause to this setup.
 # INTRODUCTION 
 this model is just a simple wait you can implement your own ORM and design according to your need.
 hope it wiil be helpfull
@@ -25,6 +34,7 @@ the coresponding sql is:
 to be precise with your request
 ```php
     $req=$db->get("message")->fields(['userid','message'])->where(['userid',"=",1])->result();
+    var_dump($req);
 ```
 the corresponding `SQL`
 ```sql
@@ -47,7 +57,7 @@ checkout the example bellow
             if ($this->db->error()) {
                 throw new Exception("operation failed. check the error description");
             }
-            return $this->db->lastId();
+            var_dump($this->db->lastId());
     } catch (Exception $ex) {
         echo $ex->getMessage();
     }
@@ -60,3 +70,20 @@ the corresponding sql look like
     INSERT INTO message (`userid`,`message`,`datecreated`) VALUES (?,?,?)
 ```
 from that request you can request for the last id record on call the `lastId()` method.
+
+* DELETE
+`delete` when you need to delete a record, this is the module to use.
+```php
+    try {
+        $db->delete("message")->where(["id","=",16])->result();
+        if ($this->db->error()) {
+            throw new Exception("failed to delete data");
+        }
+        return true;
+    } catch (Exception $ex) {
+        echo $ex->getMessage();
+    }
+```
+- call where method to define the condition to delete a record.
+
+* hope you enjoy.

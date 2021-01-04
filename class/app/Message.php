@@ -27,4 +27,16 @@ class Message{
             echo $ex->getMessage();
         }
     }
+    function deleteMessage(array $data)
+    {
+        try {
+            $this->db->delete("message")->where($data)->result();
+            if ($this->db->error()) {
+                throw new Exception("error while try to delete the data");
+            }
+            return true;
+        } catch (Exception $ex) {
+            echo $ex->getMessage();
+        }
+    }
 }
