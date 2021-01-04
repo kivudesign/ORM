@@ -29,4 +29,4 @@ the corresponding `SQL`
     SELECT userid,message FROM message WHERE userid=1
 ```
 this is not all, you can `LIMIT`, `OFFSET`,`groupBY`,`orderBy`,`ASC`,`DESC`
-
+for more detail, checkout the examole file on the test folder.

@@ -15,4 +15,16 @@ class Message{
             echo $ex->getMessage();
         }
     }
+    function sendMessage(array $data)
+    {
+        try {
+            $this->db->insert("message")->fields($data)->result();
+            if ($this->db->error()) {
+                throw new Exception("impossible d'enregister ce message");
+            }
+            return $this->db->lastId();
+        } catch (Exception $ex) {
+            echo $ex->getMessage();
+        }
+    }
 }
