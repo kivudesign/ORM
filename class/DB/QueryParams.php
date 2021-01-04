@@ -215,9 +215,39 @@ class QueryParams{
         }
         return $this;
     }
+    // 
+    private function insert()
+    {
+        if (isset($this->_fields['keys']) && isset($this->_fields['values']) && isset($this->_fields['params'])) {
+            $fields = $this->_fields['keys'];
+            $values =  $this->_fields['values'];
+            $params = $this->_fields['params'];
+            $sql = "INSERT INTO {$this->table} ({$fields}) VALUES ({$values})";
+            if (!$this->query($sql, $params)->error()) {
+                return true;
+            }
+        }
+        return false;
+    }
+    // build request siurce
+    private function build()
+    {
+        switch ($this->action) {
+            case 'select':
+                $this->select();
+                break;
+            case 'insert':
+                $this->insert();
+                break;
+            case 'update':
+            break;
+            case 'delete':
+            break;
+        }
+    }
     // return result after a request select
     function result(){
-        $this->select();
+        $this->build();
         return $this->_results;
     }
     // return an error status when an error occure while doing an querry

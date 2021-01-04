@@ -1,7 +1,8 @@
 <?php
 class DB{
     private static $_instance = null;
-    private $_pdo;         
+    private $_pdo;    
+    private $_query;     
     private function __construct()
     {
         try {
@@ -20,16 +21,29 @@ class DB{
     }
     private function queryOperation($table, $actions)
     {
+        if (strlen($table) < 1) {
+            throw new Exception("table name should be a string");
+        }
         $_get = new QueryParams($this->_pdo, $table, $actions);
         $this->_query = $_get;
         return $_get;
     }
     function get(string $table)
     {
-        if (strlen($table) < 1) {
-            throw new Exception("table name should be a string");
-        }
         return $this->queryOperation($table, "select");
+    }
+    function insert(string $table)
+    {
+        return $this->queryOperation($table, "insert");
+    }
+    // return the last id
+    function lastId()
+    {
+        return $this->_query->lastId();
+    }
+    // return an error status when an error occure while doing an querry
+    function error(){
+        $this->_query->error();
     }
     
 }
