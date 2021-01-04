@@ -1,6 +1,9 @@
 <?php
+// includde class
+include_once('./class/DB/DB.php');
+include_once('./class/DB/QueryParams.php');
+include_once('./class/app/Message.php');
 
-include_once("./class/DB.php");
+$message= new Message();
 
-$db= DB::getInstance();
-var_dump($db);
+include("./test/select.php");

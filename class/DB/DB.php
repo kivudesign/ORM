@@ -18,4 +18,18 @@ class DB{
         }
         return self::$_instance;
     }
+    private function queryOperation($table, $actions)
+    {
+        $_get = new QueryParams($this->_pdo, $table, $actions);
+        $this->_query = $_get;
+        return $_get;
+    }
+    function get(string $table)
+    {
+        if (strlen($table) < 1) {
+            throw new Exception("table name should be a string");
+        }
+        return $this->queryOperation($table, "select");
+    }
+    
 }
