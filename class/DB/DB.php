@@ -28,13 +28,20 @@ class DB{
         $this->_query = $_get;
         return $_get;
     }
+    // select module
     function get(string $table)
     {
         return $this->queryOperation($table, "select");
     }
+    // insert module
     function insert(string $table)
     {
         return $this->queryOperation($table, "insert");
+    }
+    // delete module
+    function delete(string $table)
+    {
+        return $this->queryOperation($table, "delete");
     }
     // return the last id
     function lastId()

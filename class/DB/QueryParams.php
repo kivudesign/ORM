@@ -229,6 +229,14 @@ class QueryParams{
         }
         return false;
     }
+    // delete module
+    private function delete()
+    {
+        $where = isset($this->_where['field']) ? $this->_where['field'] : "";
+        $params = isset($this->_where['params']) ? $this->_where['params'] : [];
+        $sql = "DELETE FROM {$this->table} {$where}";
+        return  $this->query($sql, $params);
+    }
     // build request siurce
     private function build()
     {
@@ -242,6 +250,7 @@ class QueryParams{
             case 'update':
             break;
             case 'delete':
+                $this->delete();
             break;
         }
     }
