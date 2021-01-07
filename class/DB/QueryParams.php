@@ -106,91 +106,6 @@ class QueryParams{
         }
         return $this;
     }
-    function fields(array $fields = [])
-    {
-        if (count($fields)) {
-            $keys = $fields;
-            $values = null;
-            $params = $keys;
-            $x = 1;
-            if ($this->action == "insert") {
-                $keys = array_keys($fields);
-                $values = "";
-                foreach ($fields as $field) {
-                    $values .= "? ";
-                    if ($x < count($fields)) {
-                        $values .= ', ';
-                    }
-                    $x++;
-                }
-            }
-            $this->_fields = [
-                "keys" => "`" . implode('`,`', $keys) . "`",
-                "values" => $values,
-                "params" => $params
-            ];
-        } else {
-            $this->_fields = "*";
-        }
-        return $this;
-    }
-    function groupBY(array $group = [])
-    {
-        if (count($group)) {
-            $this->groupBY = "group by field";
-        } else {
-            $this->groupBY = null;
-        }
-        return $this;
-    }
-    function orderBy(string $order = null)
-    {
-        if ($order) {
-            $this->orderBy = "order by ($order)";
-        } else {
-            $this->orderBy = null;
-        }
-        return $this;
-    }
-    function ASC()
-    {
-        if ($this->orderBy) {
-            $this->_asc = "ASC";
-            $this->_dsc = null;
-        }
-        return $this;
-    }
-    function DESC()
-    {
-        if ($this->orderBy) {
-            $this->_asc = null;
-            $this->_dsc = "DESC";
-        }
-        return $this;
-    }
-    function LIMIT(int $limit)
-    {
-        $this->_limit = "LIMIT {$limit}";
-        return $this;
-    }
-    function OFFSET(int $offset)
-    {
-        $this->_offset = "OFFSET {$offset}";
-        return $this;
-    }
-    
-    private function select()
-    {
-        $fields = isset($this->_fields['keys']) ? $this->_fields['keys'] : "*";
-        // 
-        $where = isset($this->_where['field']) ? $this->_where['field'] : "";
-        $params = isset($this->_where['value']) ? $this->_where['value'] : [];
-        // 
-        $sorted = $this->_asc ? $this->_asc : ($this->_dsc ? $this->_dsc : null);
-        // 
-        $sql = "SELECT {$fields} FROM {$this->table} {$where} {$this->groupBY}  {$this->orderBy} {$sorted} {$this->_limit} {$this->_offset}";
-        return $this->query($sql, $params);
-    }
     private function query($sql, array $params = [])
     {
         $this->_error = false;
@@ -203,8 +118,7 @@ class QueryParams{
                 }
             }
             if ($_query->execute()) {
-                if (strchr($sql, "SELECT")) {
-                    $this->_results = $_query->fetchAll(PDO::FETCH_OBJ);
+                if (strchr($sql, "UDPATE")) {
                     $this->_count = $_query->rowCount();
                 } else if (strchr($sql, "INSERT INTO")) {
                     $this->_lastid = $this->_pdo->lastInsertId();
@@ -241,9 +155,6 @@ class QueryParams{
     private function build()
     {
         switch ($this->action) {
-            case 'select':
-                $this->select();
-                break;
             case 'insert':
                 $this->insert();
                 break;
