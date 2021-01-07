@@ -32,79 +32,84 @@ class QueryParams{
          *  ["name","=","john","and"]
          * ]
          */
-        if (count($where)) {
-            $keys = $where;
-            $params = [];
-            $values = null;
-
-            $x = 1;
-            if ($this->action === "insert") {
-                $getKeys = array_keys($keys);
-                $checkKey = is_string($getKeys[0]);
-                $params = $where;
-                if (!$checkKey) {
-                    throw new Exception("where data format error");
-                }
-                $keys = array_keys($where);
-                foreach ($where as $elem) {
-                    $values .= "? ";
-                    if ($x < count($where)) {
-                        $values .= ', ';
-                    }
-                    $x++;
-                }
-            } else {
-                // defined comparion operator to avoid error while assing operation witch does not exist
-                $comparisonOperator = ["<", "<=", ">", ">=", "<>", "!="];
-                $logicalOperator = ["or", "not"];
-                // chech if the array is multidimensional array
-                $where = is_array($where[0]) ? $where : [$where];
-                $whereLen = count($where);
-                // 
-                $jointureWhereCondition = "";
-                $defaultComparison = "=";
-                $lastIndexWhere = 1;
-                $fieldValue = [];
-                // 
-                foreach ($where as $WhereField) {
-                    $defaultLogical = " and ";
-                    $notComparison = "";
-                    // check if there is a logical operatior `or`||`and`
-                    if (isset($WhereField[3])) {
-                        // check id the defined operation exist in our defined tables
-                        $defaultLogical = in_array(strtolower($WhereField[3]), $logicalOperator) ? $WhereField[3] : " and ";
-                        if ($defaultLogical === "not") {
-                            $notComparison = " not ";
-                        }
-                    }
-                    // check the field exist and defined by default one
-                    $_WhereField = strlen($WhereField[0]) > 0 ? $WhereField[0] : "id";
-                    if ($this->action != "delete") {
-                        $defaultComparison = in_array($WhereField[1], $comparisonOperator) ? $WhereField[1] : "=";
-                    }
-                    $jointureWhereCondition .= " {$notComparison}{$_WhereField}{$defaultComparison} ? ";
-                    $valueTopush = isset($WhereField[2]) ? $WhereField[2] : "";
-                    array_push($fieldValue, $valueTopush);
-                    array_push($params, [$_WhereField => $valueTopush]);
-
-                    if ($lastIndexWhere < $whereLen) {
-                        if ($defaultLogical != "not") {
-                            $jointureWhereCondition .= $defaultLogical;
-                        }
-                    }
-                    $lastIndexWhere++;
-                }
-                $params = $params[0];
+        try{
+            if ($this->action == "insert") {
+                throw new Exception("This method try to access undefined method");
             }
-            $this->_where = [
-                "field" => "WHERE {$jointureWhereCondition}",
-                "value" => $fieldValue,
-                "params" => $params
-            ];
-        } else {
-            $this->_where = [];
+            if (count($where)) {
+                $keys = $where;
+                $params = [];
+                $values = null;
+
+                $x = 1;
+                if ($this->action === "insert") {
+                    $getKeys = array_keys($keys);
+                    $checkKey = is_string($getKeys[0]);
+                    $params = $where;
+                    if (!$checkKey) {
+                        throw new Exception("where data format error");
+                    }
+                    $keys = array_keys($where);
+                    foreach ($where as $elem) {
+                        $values .= "? ";
+                        if ($x < count($where)) {
+                            $values .= ', ';
+                        }
+                        $x++;
+                    }
+                } else {
+                    // defined comparion operator to avoid error while assing operation witch does not exist
+                    $comparisonOperator = ["<", "<=", ">", ">=", "<>", "!="];
+                    $logicalOperator = ["or", "not"];
+                    // chech if the array is multidimensional array
+                    $where = is_array($where[0]) ? $where : [$where];
+                    $whereLen = count($where);
+                    // 
+                    $jointureWhereCondition = "";
+                    $defaultComparison = "=";
+                    $lastIndexWhere = 1;
+                    $fieldValue = [];
+                    // 
+                    foreach ($where as $WhereField) {
+                        $defaultLogical = " and ";
+                        $notComparison = "";
+                        // check if there is a logical operatior `or`||`and`
+                        if (isset($WhereField[3])) {
+                            // check id the defined operation exist in our defined tables
+                            $defaultLogical = in_array(strtolower($WhereField[3]), $logicalOperator) ? $WhereField[3] : " and ";
+                            if ($defaultLogical === "not") {
+                                $notComparison = " not ";
+                            }
+                        }
+                        // check the field exist and defined by default one
+                        $_WhereField = strlen($WhereField[0]) > 0 ? $WhereField[0] : "id";                    
+                        $jointureWhereCondition .= " {$notComparison}{$_WhereField}{$defaultComparison} ? ";
+                        $valueTopush = isset($WhereField[2]) ? $WhereField[2] : "";
+                        array_push($fieldValue, $valueTopush);
+                        array_push($params, [$_WhereField => $valueTopush]);
+
+                        if ($lastIndexWhere < $whereLen) {
+                            if ($defaultLogical != "not") {
+                                $jointureWhereCondition .= $defaultLogical;
+                            }
+                        }
+                        $lastIndexWhere++;
+                    }
+                    $params = $params[0];
+                }
+                $this->_where = [
+                    "field" => "WHERE {$jointureWhereCondition}",
+                    "value" => $fieldValue,
+                    "params" => $params
+                ];
+            } else {
+                $this->_where = [];
+            }
+            return $this;
+        } catch (Exception $ex) {
+            echo $ex->getMessage();
+            return false;
         }
-        return $this;
     }
     private function query($sql, array $params = [])
     {
