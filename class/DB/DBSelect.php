@@ -171,7 +171,6 @@ class DBSelect{
         $sortedASC_DESC = $this->_asc ? $this->_asc : ($this->_dsc ? $this->_dsc : null);
         // 
         $sql = "SELECT {$fields} FROM {$this->table}".$WHERE.$this->groupBY . $this->orderBy . $sortedASC_DESC . $this->_limit . $this->_offset;
-        var_dump($sql);die();
         return $this->query($sql, $params);
     }
     private function query($sql, array $params = [])
