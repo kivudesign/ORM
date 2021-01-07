@@ -31,7 +31,12 @@ class DB{
     // select module
     function get(string $table)
     {
-        return $this->queryOperation($table, "select");
+        if (strlen($table) < 1) {
+            throw new Exception("table name should be a string");
+        }
+        $_get = new DBSelect($this->_pdo, $table);
+        $this->_query = $_get;
+        return $_get;
     }
     // insert module
     function insert(string $table)
