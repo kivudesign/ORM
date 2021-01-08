@@ -86,4 +86,18 @@ from that request you can request for the last id record on call the `lastId()` 
 ```
 - call where method to define the condition to delete a record.
 
+* QUERY 
+the `query` method is used in case you have specific query you want to execute, then you can use it. 
+```php
+    try{
+        $req = $this->db->query("select * from message join users on users.id=message.userid");
+        if($req->error()){
+            throw new Exception($req->error());
+        }
+        return $req->result();
+    }catch(Exception $ex){
+        echo $ex->getMessage();
+    }
+```
+the example bellow describe how it can be used. with the `query` method use the `result()` method to get the result.
 * hope you enjoy.
