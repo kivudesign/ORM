@@ -21,7 +21,7 @@ class DBQeury{
                 }
             }
             $_query->execute();
-            if (strchr($sql, strtolower("UDPATE")) || strchr($sql, strtolower("SELECT"))) {
+            if (strchr(strtolower($sql), strtolower("UDPATE")) || strchr(strtolower($sql), strtolower("SELECT"))) {
                 $this->result = $_query->fetchAll(PDO::FETCH_OBJ);
                 $this->rowCount = $_query->rowCount();
             } else if (strchr($sql, strtolower("INSERT INTO"))) {

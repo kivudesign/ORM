@@ -9,9 +9,7 @@ class Message{
     function getMessage()
     {
         try {
-            $req = $this->db->query("select * from message");
-            var_dump($req);
-            // $req = $this->db->get("message")->where(["id","=","1"])->fields(['userid','message'])->where(['userid',"=",1]);
+            $req = $this->db->get("message")->fields(['userid','message'])->where(['userid',"=",1]);
             return $req->result();
         } catch (Exception $ex) {
             echo $ex->getMessage();
@@ -38,6 +36,17 @@ class Message{
             }
             return true;
         } catch (Exception $ex) {
+            echo $ex->getMessage();
+        }
+    }
+    function SelectOneMessage(){
+        try{
+            $req = $this->db->query("select * from message join users on users.id=message.userid");
+            if($req->error()){
+                throw new Exception($req->error());
+            }
+            return $req->result();
+        }catch(Exception $ex){
             echo $ex->getMessage();
         }
     }
