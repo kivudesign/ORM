@@ -1,7 +1,7 @@
 <?php
 class DB{
     private static $_instance = null;
-    private $_pdo;    
+    private $_pdo,$_results,$_error,$_lastid;    
     private $_query,$sqlQUery; 
     private $option=[
         PDO::MYSQL_ATTR_INIT_COMMAND=>"SET NAMES utf8",
@@ -52,13 +52,27 @@ class DB{
     {
         return $this->queryOperation($table, "delete");
     }
+    //
+    function query($sql, array $params = []){
+        $q = new DBQeury($this->_pdo, $sql, $params);
+        $this->_results = $q->result();
+        $this->_count = $q->rowCount();
+        $this->_error = $q->getError();
+        $this->_lastid = $q->lastId();
+        return $this;
+    }
     // return the last id
     function lastId()
     {
-        return $this->_query->lastId();
+        return isset($this->_query)?$this->_query->lastId():$this->_lastid;
     }
     // return an error status when an error occure while doing an querry
     function error(){
-        return isset($this->sqlQUery)?$this->sqlQUery->error():$this->_query->error();
-    }    
+        $_error= isset($this->sqlQUery) ? $this->sqlQUery->error():$this->_error;
+        $_error= isset($this->_query) ? $this->_query->error():$this->_error;
+        return $_error;
+    }
+    function result(){
+        return $this->_results;
+    }
 }

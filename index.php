@@ -8,6 +8,7 @@ include_once('./class/app/Message.php');
 
 $message= new Message();
 
-include("./test/select.php");
+// include("./test/select.php");
 // include("./test/insert.php");
 // include("./test/delete.php");
+include("./test/query.php");

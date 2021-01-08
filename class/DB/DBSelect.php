@@ -180,6 +180,7 @@ class DBSelect{
         $this->_results=$q->result();
         $this->_count=$q->rowCount();
         $this->_error=$q->getError();
+        return $this;
     }
     // execute query to get result
     function result()

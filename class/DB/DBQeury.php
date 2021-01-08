@@ -21,10 +21,10 @@ class DBQeury{
                 }
             }
             $_query->execute();
-            if (strchr($sql, "UDPATE") || strchr($sql, "SELECT")) {
+            if (strchr(strtolower($sql), strtolower("UDPATE")) || strchr(strtolower($sql), strtolower("SELECT"))) {
                 $this->result = $_query->fetchAll(PDO::FETCH_OBJ);
                 $this->rowCount = $_query->rowCount();
-            } else if (strchr($sql, "INSERT INTO")) {
+            } else if (strchr($sql, strtolower("INSERT INTO"))) {
                 $this->lastInsertId = $this->_pdo->lastInsertId();
             }                
         }catch(Exception $ex){
