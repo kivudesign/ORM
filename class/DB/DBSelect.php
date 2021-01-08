@@ -20,6 +20,7 @@ class DBSelect{
         $this->_limit = null;
         $this->_offset = null;
         $this->_error = false;
+        $this->where=false;
     }
     function where(array $params = [])
     {
@@ -34,7 +35,7 @@ class DBSelect{
          * ]
          */
         try{
-            if (count($params)) {            
+            if (count($params) && !$this->_where) {            
                 // $params = [];
                 // defined comparion operator to avoid error while assing operation witch does not exist
                 $comparisonOperator = ["<", "<=", ">", ">=", "<>", "!="];
@@ -175,22 +176,10 @@ class DBSelect{
     }
     private function query($sql, array $params = [])
     {
-        if ($_query = $this->_pdo->prepare($sql)) {
-            $x = 1;
-            if (count($params)) {
-                foreach ($params as $param) {
-                    $_query->bindValue($x, $param);
-                    $x++;
-                }
-            }
-            if ($_query->execute()) {               
-                $this->_results = $_query->fetchAll(PDO::FETCH_OBJ);
-                $this->_count = $_query->rowCount();                
-            } else {
-                $this->_error = true;
-            }
-        }
-        return $this;
+        $q= new DBQeury($this->_pdo,$sql,$params);
+        $this->_results=$q->result();
+        $this->_count=$q->rowCount();
+        $this->_error=$q->getError();
     }
     // execute query to get result
     function result()

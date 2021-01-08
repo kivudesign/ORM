@@ -1,14 +1,8 @@
 <?php
 class QueryParams{
     private $table, $action, $_pdo;
-    private $_where, $_fields, $orderBy, $groupBY;
-    private  $_error,
-        $_results = false,
-        $_count = 0,
-        $_limit,
-        $_offset,
-        $_dsc,
-        $_asc, $_lastid;
+    private $_where, $_fields;
+    private  $_error,$_results = false,$_count = 0, $_lastid;
     function __construct($pdo, string $table, string $action)
     {
         $this->table = $table;
@@ -111,27 +105,39 @@ class QueryParams{
             return false;
         }
     }
-    private function query($sql, array $params = [])
-    {
-        $this->_error = false;
-        if ($_query = $this->_pdo->prepare($sql)) {
+    function fields(array $fields = [])
+    {   
+        if (count($fields) && !$this->_fields && $this->action=="insert") {
+            $keys = $fields;
+            $values = null;
+            $params = $keys;
             $x = 1;
-            if (count($params)) {
-                foreach ($params as $param) {
-                    $_query->bindValue($x, $param);
+            if ($this->action == "insert") {
+                $keys = array_keys($fields);
+                $values = "";
+                foreach ($fields as $field) {
+                    $values .= "? ";
+                    if ($x < count($fields)) {
+                        $values .= ', ';
+                    }
                     $x++;
                 }
             }
-            if ($_query->execute()) {
-                if (strchr($sql, "UDPATE")) {
-                    $this->_count = $_query->rowCount();
-                } else if (strchr($sql, "INSERT INTO")) {
-                    $this->_lastid = $this->_pdo->lastInsertId();
-                }
-            } else {
-                $this->_error = true;
-            }
+            $this->_fields = [
+                "keys" => "`" . implode('`,`', $keys) . "`",
+                "values" => $values,
+                "params"=>$params
+            ];
         }
+        return $this;
+    }
+    private function query($sql, array $params = [])
+    {
+        $q = new DBQeury($this->_pdo, $sql, $params);
+        $this->_results = $q->result();
+        $this->_count = $q->rowCount();
+        $this->_error = $q->getError();
+        $this->_lastid=$q->lastId();
         return $this;
     }
     // 
@@ -141,7 +147,7 @@ class QueryParams{
             $fields = $this->_fields['keys'];
             $values =  $this->_fields['values'];
             $params = $this->_fields['params'];
-            $sql = "INSERT INTO {$this->table} ({$fields}) VALUES ({$values})";
+            $sql = "INSERT INTO {$this->table} ({$fields}) VALUES ({$values})";           
             if (!$this->query($sql, $params)->error()) {
                 return true;
             }
@@ -154,7 +160,10 @@ class QueryParams{
         $where = isset($this->_where['field']) ? $this->_where['field'] : "";
         $params = isset($this->_where['params']) ? $this->_where['params'] : [];
         $sql = "DELETE FROM {$this->table} {$where}";
-        return  $this->query($sql, $params);
+        if (!$this->query($sql, $params)->error()) {
+            return true;
+        }
+        return false;
     }
     // build request siurce
     private function build()

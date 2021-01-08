@@ -2,12 +2,16 @@
 class DB{
     private static $_instance = null;
     private $_pdo;    
-    private $_query;     
+    private $_query,$sqlQUery; 
+    private $option=[
+        PDO::MYSQL_ATTR_INIT_COMMAND=>"SET NAMES utf8",
+        PDO::ATTR_EMULATE_PREPARES=>false,
+        PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION
+    ]  ;  
     private function __construct()
     {
         try {
-            $this->_pdo = new PDO("mysql:host=localhost;dbname=wepesi_db", "root", "");
-            $this->_pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $this->_pdo = new PDO("mysql:host=localhost;dbname=wepesi_db", "root", "",$this->option);
         } catch (PDOException $ex) {
             die($ex->getMessage());
         }
@@ -35,7 +39,7 @@ class DB{
             throw new Exception("table name should be a string");
         }
         $_get = new DBSelect($this->_pdo, $table);
-        $this->_query = $_get;
+        $this->sqlQUery = $_get;
         return $_get;
     }
     // insert module
@@ -55,7 +59,6 @@ class DB{
     }
     // return an error status when an error occure while doing an querry
     function error(){
-        $this->_query->error();
-    }
-    
+        return isset($this->sqlQUery)?$this->sqlQUery->error():$this->_query->error();
+    }    
 }

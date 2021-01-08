@@ -9,7 +9,7 @@ class Message{
     function getMessage()
     {
         try {
-            $req = $this->db->get("message")->fields(['userid','message'])->where(['userid',"=",1]);
+            $req = $this->db->get("message")->where(["id","=","1"])->fields(['userid','message'])->where(['userid',"=",1]);
             return $req->result();
         } catch (Exception $ex) {
             echo $ex->getMessage();
@@ -32,7 +32,7 @@ class Message{
         try {
             $this->db->delete("message")->where($data)->result();
             if ($this->db->error()) {
-                throw new Exception("error while try to delete the data");
+                throw new Exception($this->db->error());
             }
             return true;
         } catch (Exception $ex) {
