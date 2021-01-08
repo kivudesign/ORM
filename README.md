@@ -84,6 +84,10 @@ from that request you can request for the last id record on call the `lastId()` 
         echo $ex->getMessage();
     }
 ```
+corespondig sql is
+```sql
+    DELETE `message` WHERE `id`='16'
+```
 - call where method to define the condition to delete a record.
 
 * QUERY 
