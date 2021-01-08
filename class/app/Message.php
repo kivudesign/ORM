@@ -9,7 +9,9 @@ class Message{
     function getMessage()
     {
         try {
-            $req = $this->db->get("message")->where(["id","=","1"])->fields(['userid','message'])->where(['userid',"=",1]);
+            $req = $this->db->query("select * from message");
+            var_dump($req);
+            // $req = $this->db->get("message")->where(["id","=","1"])->fields(['userid','message'])->where(['userid',"=",1]);
             return $req->result();
         } catch (Exception $ex) {
             echo $ex->getMessage();
