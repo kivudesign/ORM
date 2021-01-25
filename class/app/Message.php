@@ -10,7 +10,10 @@ class Message{
     {
         try {
             $req = $this->db->get("message")->fields(['userid','message'])->where(['userid',"=",1]);
-            return $req->result();
+            return [
+                "result"=>$req->result(),
+                "total"=>$req->count()
+            ];
         } catch (Exception $ex) {
             echo $ex->getMessage();
         }
@@ -30,11 +33,11 @@ class Message{
     function deleteMessage(array $data)
     {
         try {
-            $this->db->delete("message")->where($data)->result();
+            $req=$this->db->delete("message")->where($data)->result();
             if ($this->db->error()) {
                 throw new Exception($this->db->error());
             }
-            return true;
+            return ["row deleted"=>$this->db->count()];
         } catch (Exception $ex) {
             echo $ex->getMessage();
         }

@@ -75,4 +75,8 @@ class DB{
     function result(){
         return $this->_results;
     }
+    // count result after delete or update
+    function count(){
+        return $this->_query->count();
+    }
 }
