@@ -53,4 +53,15 @@ class Message{
             echo $ex->getMessage();
         }
     }
+    function updateMessage(array $data,array $where){
+        try{
+            $req = $this->db->update("message")->fields($data)->where($where)->result();
+            if($this->db->error()){
+                throw new Exception($req->error());
+            }
+            return ["row updated"=>$this->db->count()];
+        }catch(Exception $ex){
+            echo $ex->getMessage();
+        }
+    }
 }

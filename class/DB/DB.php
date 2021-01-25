@@ -52,6 +52,11 @@ class DB{
     {
         return $this->queryOperation($table, "delete");
     }
+    // udate module
+    function update(string $table)
+    {
+        return $this->queryOperation($table, "update");
+    }
     //
     function query($sql, array $params = []){
         $q = new DBQeury($this->_pdo, $sql, $params);
