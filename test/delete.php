@@ -1,3 +1,3 @@
 <?php
-    $req = $message->deleteMessage(["id", "=", "16"]);
+    $req = $message->deleteMessage(["id", "=", "1"]);
     var_dump($req);

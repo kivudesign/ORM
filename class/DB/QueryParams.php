@@ -106,13 +106,13 @@ class QueryParams{
         }
     }
     function fields(array $fields = [])
-    {   
-        if (count($fields) && !$this->_fields && $this->action=="insert") {
+    {
+        if (count($fields) && !$this->_fields && ($this->action == "insert" || $this->action == "update")) {
             $keys = $fields;
             $values = null;
             $params = $keys;
             $x = 1;
-            if ($this->action == "insert") {
+            if ($this->action == "insert" || $this->action == "update") {
                 $keys = array_keys($fields);
                 $values = "";
                 foreach ($fields as $field) {
@@ -123,10 +123,15 @@ class QueryParams{
                     $x++;
                 }
             }
+            $implode = "`" . implode('`,`', $keys) . "`";
+            if ($this->action == "update") {
+                $implode = "`" . implode('`= ?,`', $keys) . "`";
+                $implode .= "=?";
+            }
             $this->_fields = [
-                "keys" => "`" . implode('`,`', $keys) . "`",
+                "keys" => $implode,
                 "values" => $values,
-                "params"=>$params
+                "params" => $params
             ];
         }
         return $this;
@@ -165,6 +170,20 @@ class QueryParams{
         }
         return false;
     }
+    // update module
+    private function update()
+    {
+        $where = isset($this->_where['field']) ? $this->_where['field'] : "";
+        $where_params = isset($this->_where['params']) ? $this->_where['params'] : [];
+        $fields = $this->_fields['keys'];
+        $field_params = isset($this->_fields['params']) ? $this->_fields['params'] : [];
+        $params = array_merge($field_params, $where_params);
+        $sql = "UPDATE {$this->table} SET {$fields}  {$where}";
+        if (!$this->query($sql, $params)->error()) {
+            return true;
+        }
+        return false;
+    }
     // build request siurce
     private function build()
     {
@@ -173,6 +192,7 @@ class QueryParams{
                 $this->insert();
                 break;
             case 'update':
+                $this->update();
             break;
             case 'delete':
                 $this->delete();
