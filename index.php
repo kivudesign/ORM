@@ -1,9 +1,9 @@
 <?php
 // includde class
 include_once('./class/DB/DB.php');
-include_once('./class/DB/QueryParams.php');
-include_once('./class/DB/DBSelect.php');
-include_once('./class/DB/DBQeury.php');
+include_once('./class/DB/DB_Query.php');
+include_once('./class/DB/DB_Select.php');
+include_once('./class/DB/DB_Exec_Qeury.php');
 include_once('./class/app/Message.php');
 
 $message= new Message();

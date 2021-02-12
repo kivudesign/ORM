@@ -1,6 +1,6 @@
 <?php
 
-class DBQeury{
+class DB_Exec_Qeury{
     private $_pdo;
     private $rowCount,$lastInsertId,$result,$error;
     function __construct($pdo,string $sql,array $param=[])
