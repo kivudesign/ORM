@@ -1,6 +1,6 @@
 <?php
 
-class DBSelect{
+class DB_Select{
     private $table, $action, $_pdo;
     private $_where, $_fields, $orderBy, $groupBY;
     private  $_error,
@@ -176,7 +176,7 @@ class DBSelect{
     }
     private function query($sql, array $params = [])
     {
-        $q= new DBQeury($this->_pdo,$sql,$params);
+        $q= new DB_Exec_Qeury($this->_pdo,$sql,$params);
         $this->_results=$q->result();
         $this->_count=$q->rowCount();
         $this->_error=$q->getError();

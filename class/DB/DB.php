@@ -11,7 +11,7 @@ class DB{
     private function __construct()
     {
         try {
-            $this->_pdo = new PDO("mysql:host=localhost;dbname=wepesi_db", "root", "",$this->option);
+            $this->_pdo = new PDO("mysql:host=" . Config::get('mysql/host') . ";dbname=" . Config::get('mysql/db'), Config::get('mysql/username'), Config::get('mysql/password'), $this->option);
         } catch (PDOException $ex) {
             die($ex->getMessage());
         }
@@ -28,7 +28,7 @@ class DB{
         if (strlen($table) < 1) {
             throw new Exception("table name should be a string");
         }
-        $_get = new QueryParams($this->_pdo, $table, $actions);
+        $_get = new DB_Query($this->_pdo, $table, $actions);
         $this->_query = $_get;
         return $_get;
     }
@@ -38,7 +38,7 @@ class DB{
         if (strlen($table) < 1) {
             throw new Exception("table name should be a string");
         }
-        $_get = new DBSelect($this->_pdo, $table);
+        $_get = new DB_Select($this->_pdo, $table);
         $this->sqlQUery = $_get;
         return $_get;
     }
@@ -59,7 +59,7 @@ class DB{
     }
     //
     function query($sql, array $params = []){
-        $q = new DBQeury($this->_pdo, $sql, $params);
+        $q = new DB_Exec_Qeury($this->_pdo, $sql, $params);
         $this->_results = $q->result();
         $this->_count = $q->rowCount();
         $this->_error = $q->getError();

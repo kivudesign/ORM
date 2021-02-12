@@ -6,10 +6,10 @@ class Message{
     {
         $this->db=DB::getInstance();
     }
-    function getMessage()
+    function getMessage(array $where)
     {
         try {
-            $req = $this->db->get("message")->fields(['userid','message'])->where(['userid',"=",1]);
+            $req = $this->db->get("message")->fields(['userid','message'])->where($where);
             return [
                 "result"=>$req->result(),
                 "total"=>$req->count()

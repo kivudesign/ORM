@@ -1,5 +1,5 @@
 <?php
-class QueryParams{
+class DB_Query{
     private $table, $action, $_pdo;
     private $_where, $_fields;
     private  $_error,$_results = false,$_count = 0, $_lastid;
@@ -138,7 +138,7 @@ class QueryParams{
     }
     private function query($sql, array $params = [])
     {
-        $q = new DBQeury($this->_pdo, $sql, $params);
+        $q = new DB_Exec_Qeury($this->_pdo, $sql, $params);
         $this->_results = $q->result();
         $this->_count = $q->rowCount();
         $this->_error = $q->getError();
