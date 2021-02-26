@@ -11,7 +11,7 @@ class DB_Select{
         $_dsc,
         $_asc;
 
-    function __construct($pdo, $table)
+    function __construct($pdo,string $table,string $action=null)
     {
         $this->table = $table;
         $this->_pdo = $pdo;
@@ -21,6 +21,7 @@ class DB_Select{
         $this->_offset = null;
         $this->_error = false;
         $this->where=false;
+        $this->action=$action;
     }
     function where(array $params = [])
     {
@@ -174,6 +175,14 @@ class DB_Select{
         $sql = "SELECT {$fields} FROM {$this->table}".$WHERE.$this->groupBY . $this->orderBy . $sortedASC_DESC . $this->_limit . $this->_offset;
         return $this->query($sql, $params);
     }
+    // 
+    private function countTotal(){
+        $WHERE = isset($this->_where['field']) ? $this->_where['field'] : "";
+        $params = isset($this->_where['value']) ? $this->_where['value'] : [];
+        $sql="SELECT COUNT(*) {$this->table}" . $WHERE;
+        return $this->query($sql,$params);
+    }
+    // 
     private function query($sql, array $params = [])
     {
         $q= new DB_Exec_Qeury($this->_pdo,$sql,$params);
@@ -182,10 +191,18 @@ class DB_Select{
         $this->_error=$q->getError();
         return $this;
     }
+    // build request
+    private function build(){
+        if($this->action && $this->action=="count"){
+            $this->countTotal();
+        }else{
+            $this->select();
+        }
+    }
     // execute query to get result
     function result()
     {
-        $this->select();
+        $this->build();
         return $this->_results;
     }
     // return an error status when an error occure while doing an querry

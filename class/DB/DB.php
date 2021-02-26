@@ -42,6 +42,13 @@ class DB{
         $this->sqlQUery = $_get;
         return $_get;
     }
+    function count(string $table)
+    {
+        if (strlen($table) < 1) {
+            throw new Exception("table name should be a string");
+        }        
+        return  new DB_Select($this->_pdo, $table,"count");
+    }
     // insert module
     function insert(string $table)
     {
@@ -81,7 +88,7 @@ class DB{
         return $this->_results;
     }
     // count result after delete or update
-    function count(){
-        return $this->_query->count();
-    }
+    // function count(){
+    //     return $this->_query->count();
+    // }
 }
