@@ -10,9 +10,11 @@ class Message{
     {
         try {
             $req = $this->db->get("message")->fields(['userid','message'])->where($where);
+            $count =$this->db->count("message")->where($where)->result();
             return [
+                "total_count"=>$count,
+                "total"=>$req->count(),
                 "result"=>$req->result(),
-                "total"=>$req->count()
             ];
         } catch (Exception $ex) {
             echo $ex->getMessage();
