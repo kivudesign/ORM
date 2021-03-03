@@ -32,22 +32,32 @@ class DB{
         $this->_query = $_get;
         return $_get;
     }
-    // select module
+
+    /**
+     * @string :$table =>this is the name of the table where to get information
+     * this method allow to do a select field from  a $table with all the conditions defined ;
+     */
     function get(string $table)
     {
+        return $this->select_option($table);
+    }
+    /**
+     * @string :$table =>this is the name of the table where to get information
+     * this method allow to do a count the number of field on a $table with all the possible condition
+     */
+    function count(string $table)
+    {
+        return $this->select_option($table,"count");
+    }
+    /**
+     * @string : $table=> this is the name of the table where to get information
+     * @string : @action=> this is the type of action tu do while want to do a request
+     */
+    private function select_option(string $table,string $action=null){
         if (strlen($table) < 1) {
             throw new Exception("table name should be a string");
         }
-        $_get = new DB_Select($this->_pdo, $table);
-        $this->sqlQUery = $_get;
-        return $_get;
-    }
-    function count(string $table)
-    {
-        if (strlen($table) < 1) {
-            throw new Exception("table name should be a string");
-        }        
-        return  new DB_Select($this->_pdo, $table,"count");
+        return $this->sqlQUery = new DB_Select($this->_pdo, $table, $action);
     }
     // insert module
     function insert(string $table)
@@ -88,7 +98,7 @@ class DB{
         return $this->_results;
     }
     // count result after delete or update
-    // function count(){
-    //     return $this->_query->count();
-    // }
+    function rowCount(){
+        return $this->_query->rowCount();
+    }
 }

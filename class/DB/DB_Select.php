@@ -215,7 +215,7 @@ class DB_Select{
         return $this->_error;
     }
     // retourn counted rows of a select querry
-    function count()
+    function rowCount()
     {
         return $this->_count;
     }
