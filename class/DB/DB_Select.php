@@ -179,7 +179,7 @@ class DB_Select{
     private function countTotal(){
         $WHERE = isset($this->_where['field']) ? $this->_where['field'] : "";
         $params = isset($this->_where['value']) ? $this->_where['value'] : [];
-        $sql="SELECT COUNT(*) {$this->table}" . $WHERE;
+        $sql="SELECT COUNT(*) as count FROM {$this->table}" . $WHERE;
         return $this->query($sql,$params);
     }
     // 
@@ -203,7 +203,11 @@ class DB_Select{
     function result()
     {
         $this->build();
-        return $this->_results;
+        if($this->action && $this->action=="count"){
+            return $this->_results[0]->count;
+        }else{
+            return $this->_results;
+        }
     }
     // return an error status when an error occure while doing an querry
     function error()
@@ -211,7 +215,7 @@ class DB_Select{
         return $this->_error;
     }
     // retourn counted rows of a select querry
-    function count()
+    function rowCount()
     {
         return $this->_count;
     }

@@ -9,10 +9,13 @@ class Message{
     function getMessage(array $where)
     {
         try {
-            $req = $this->db->get("message")->fields(['userid','message'])->where($where);
+            // count number of result from table with conditions
+            $count =$this->db->count("message")->where($where)->result();
+            // get selected field from selected table with condition
+            $req = $this->db->get("message")->fields(['userid','message'])->where($where)->result();
             return [
-                "result"=>$req->result(),
-                "total"=>$req->count()
+                "total"=>$count,
+                "result"=>$req,
             ];
         } catch (Exception $ex) {
             echo $ex->getMessage();
@@ -37,7 +40,7 @@ class Message{
             if ($this->db->error()) {
                 throw new Exception($this->db->error());
             }
-            return ["row deleted"=>$this->db->count()];
+            return ["row deleted"=>$this->db->countAll()];
         } catch (Exception $ex) {
             echo $ex->getMessage();
         }
