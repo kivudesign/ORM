@@ -23,10 +23,13 @@
         foreach ($directories as $directory) $subDir = array_merge($subDir, getSubDirectories($directory . '/*'));
         return $subDir;
     }
-    /**
-     * implement autoload module without composer
-     */
-    // will load all class from the class folder
+
+/**
+ *
+ * implement autoload module without composer
+ * this idea is allow the app to autoload class module without problem
+ *
+ */
     spl_autoload_register(function($className){
         $check_NameSpace_separator=explode("\\",$className); // explode to get all namespace defined, if there is
         $len=count($check_NameSpace_separator);//count how much namescpace exist  
@@ -35,8 +38,8 @@
         $dirs = getSubDirectories("class");
         foreach($dirs as $dir){
             $file= $dir."/".str_replace('\\', '/',$class).".php";
-            if (is_file($file)) { // check if the file exist
-                include_once($file); // incluse the file request if it exist
+            if (is_file($file)) {
+                include_once($file);
             }
         }
     });
