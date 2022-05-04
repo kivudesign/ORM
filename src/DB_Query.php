@@ -2,7 +2,7 @@
 
 namespace Wepesi\App;
 
-class DB_Qeury
+class DB_Query
 {
     private $_pdo;
     private $rowCount, $lastInsertId, $result, $error;

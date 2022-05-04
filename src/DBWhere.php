@@ -4,7 +4,7 @@ namespace Wepesi\App;
 
 trait DBWhere
 {
-    function fnWhere(array $where = []){
+    function condition(array $where = []){
         /**
          * select WHERE format
          * [

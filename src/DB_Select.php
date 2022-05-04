@@ -1,15 +1,12 @@
 <?php
 
 namespace Wepesi\App;
-class DB_Select
+
+class DB_Select extends DB_Q
 {
     private  $table, $action,$_leftJoin,$_rightJoin,$_error,$_dsc,$_asc,$_join,$orderBy,$groupBY;
-    private \PDO $_pdo;
-    private  $_where=[],
-        $_fields=[],$_results=[];
-    private  $_count = 0,
-        $_limit=null,
-        $_offset=null;
+    private  array $_where=[],  $_fields=[];
+    private $_limit=null,  $_offset=null;
     private $_join_comparison_sign=["=",">","<","!=","<>"];
     /**
      *
@@ -20,19 +17,20 @@ class DB_Select
     function __construct(\PDO $pdo, string $table, string $action="select")
     {
         $this->table = $table;
-        $this->_pdo = $pdo;
         $this->action=$action;
+        parent::__construct($pdo);
 //        $this->initInut();
     }
     private function initInut(){
        $this->table="";$this->action="";$this->_leftJoin="";$this->_rightJoin="";$this->_error="";$this->_dsc="";$this->_asc="";$this->_join="";
        $this->orderBy="";$this->groupBY="";
     }
+
     /**
      *
      * @param array $params
      * @return $this
-     * @throws Exception
+     * @throws \Exception
      */
     function where(array $params = []){
         // select where <> update where
@@ -221,7 +219,7 @@ class DB_Select
             if(!$table_name)return  false;
             $this->_leftJoin=" RIGHT {$table_name} {$on} ";
 //            return $this;
-        }catch (\Exception $ex){
+        }catch (Exception $ex){
             $this->_error = true;
         }
     }
@@ -244,7 +242,7 @@ class DB_Select
             if(!$table_name)return  false;
             $this->_leftJoin=" JOIN {$table_name} {$on} ";
 //            return $this;
-        }catch (\Exception $ex){
+        }catch (Exception $ex){
             $this->_error = true;
         }
     }
@@ -263,7 +261,6 @@ class DB_Select
         $_jointure="";
         //
         $sql = "SELECT {$fields} FROM {$this->table} {$_jointure} " . $WHERE . $this->groupBY . $this->orderBy . $sortedASC_DESC . $this->_limit . $this->_offset;
-        var_dump($sql);
         return $this->query($sql, $params);
     }
     /**
@@ -283,10 +280,11 @@ class DB_Select
      */
     private function query(string $sql, array $params = [])
     {
-        $q = new DB_Qeury($this->_pdo, $sql, $params);
-        $this->_results = $q->result();
-        $this->_count = $q->rowCount();
-        $this->_error = $q->getError();
+        $this->executeQuery($sql, $params);
+//        $this->_results = $q->result();
+//        $this->_count = $q->rowCount();
+//        $this->_error = $q->getError();
+//        return $this;
     }
     /**
      *
@@ -306,7 +304,7 @@ class DB_Select
     function result()
     {
         $this->build();
-        return $this->action=="count"?$this->_results[0]->count:$this->_results;
+        return $this->get_result();
     }
     /**
      *
@@ -315,6 +313,6 @@ class DB_Select
      */
     function error()
     {
-        return $this->_error;
+        return $this->get_Error();
     }
 }
