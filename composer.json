@@ -1,0 +1,21 @@
+{
+    "name": "wepesi/orm",
+    "description": "simple orm build for php",
+    "type": "library",
+    "license": "Apache-2.0",
+    "minimum-stability": "beta",
+    "autoload": {
+        "psr-4": {
+            "Wepesi\\App\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "bim-g",
+            "email": "ibmussafb@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.4"
+    }
+}

@@ -1,9 +1,17 @@
 <?php
-$data = [
-    "userid" => 2,
+$db=$db??[];
+$field = [
+    "userid" => 1,
     "message" => "hello from wepesi",
-    "datecreated" => Date('Y-m-d H:i:s')
+    "datecreated" => date('Y-m-d H:i:s',strtotime("now"))
 ];
-$res=$message->sendMessage($data);
+try {
+    $db->insert("message")->field($field)->result();
+    if($db->error()){
+        throw new \Exception($db->error());
+    }
+    var_dump(["last insert ID : "=>$db->lastId()]);
+} catch (Exception $e) {
+    var_dump($e->getMessage());
+}
 
-var_dump($res);

@@ -1,5 +1,10 @@
 <?php
-// $where= ['userid', "=", 1];
-$where=[];
-$res=$message->getmessage($where);
-var_dump($res);
+try{
+    $where=[];
+//    $where= ['id', "=", 1];
+    $db=$db??(object)[];
+    $res=$db->get("users")->where($where)->result();
+    var_dump($res);
+} catch (Exception $e) {
+    var_dump($e->getMessage());
+}
