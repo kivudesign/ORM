@@ -1,19 +1,10 @@
 <?php
 
-namespace Wepesi\App;
+namespace Wepesi\App\Traits;
 
 trait DBWhere
 {
     function condition(array $where = []){
-        /**
-         * select WHERE format
-         * [
-         *  [field,comparisonOperator,value,logicOperator]
-         * ]
-         * eg:[
-         *  ["name","=","john","and"]
-         * ]
-         */
         if(count($where)==0) return;
         $params = [];
         /**

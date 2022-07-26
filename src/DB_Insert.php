@@ -1,111 +1,113 @@
 <?php
+/**
+ * Wepesi ORM
+ * DB_Insert
+ * Ibrahim Mussa
+ * https://github.com/bim-g
+ */
 namespace Wepesi\App;
 
-class DB_Insert extends DB_Q {
+class DB_Insert 
+{
     private string $table;
-    private $_fields;
-    use DBField;
+    private \PDO $pdo;
+    private array $_fields;
+    private string $_error;
+    private array $_results;
+    private int $lastID;
+    use BuildQuery;
+
     function __construct(\PDO $pdo, string $table)
     {
         $this->table = $table;
-        parent::__construct($pdo);
+        $this->pdo = $pdo;
+        $this->_fields = [];
+        $this->_results = [];
+        $this->lastID = 0;
+        $this->_error = '';
     }
 
+    /**
+     * @param array $fields
+     * @return $this
+     */
     function field(array $fields): DB_Insert
     {
-        $result=$this->field_params($fields,"insert");
-        if(is_array($result)){
-            $this->_fields = $result;
-        }else{
-            echo ("This method try to access undefined method");
+        if (count($fields) && !$this->_fields) {
+            $field_key_position = 0;
+            $keys = array_keys($fields);
+            $values = null;
+            $trim_key = [];
+            foreach ($fields as $field) {
+                $values .= '? ';
+                if (count($fields) > ($field_key_position + 1)) {
+                    $values .= ', ';
+                }
+                //remove white space around the field name
+                $trim_key[] = trim($keys[$field_key_position]);
+                $field_key_position++;
+            }
+
+            $implode_keys = '`' . implode('`,`', $trim_key) . '`';
+
+            $this->_fields = [
+                'keys' => $implode_keys,
+                'values' => $values,
+                'params' => $fields
+            ];
         }
         return $this;
     }
 
-    //
-//    function field(array $fields = [])
-//    {
-//        if (count($fields) && !$this->_fields) {
-//            $keys = $fields;
-//            $params = $keys;
-//
-//            $keys = array_keys($fields);
-//            $values = null;
-//            $_trim_key=[];
-//            $count_key=count($fields);
-//            $x =0;
-//            for($x = 0;$x<$count_key;$x++) {
-//                $values .= "?";
-//                if ($x < ($count_key-1)) {
-//                    $values .= ',';
-//                }
-//                array_push($_trim_key,trim($keys[$x]));
-//            }
-//            $keys=$_trim_key;
-//            $implode_keys= "`" . implode('`,`', $keys) . "`";
-//
-//            $this->_fields = [
-//                "fields" => $implode_keys,
-//                "values" => $values,
-//                "params" => $params
-//            ];
-//            return $this;
-//        }else{
-//            throw new \Exception("This method try to access undefined method");
-//        }
-//    }
-
     /**
-     * @param $sql
+     * @param string $sql
      * @param array $params
+     * @return void
      * this module is use to execute sql request
      */
-    private function query($sql, array $params = [])
+    private function query(string $sql, array $params = [])
     {
-        $this->executeQuery($sql, $params);
+        $q = $this->executeQuery($this->pdo, $sql, $params);
+        $this->_results = $q['result'];
+        $this->_error = $q['error'];
+        $this->lastID = $q['lastID'];
     }
 
     /**
      *
-     * @return void
-     * use this module to create new record
      */
     private function insert()
     {
-        if (isset($this->_fields['fields']) && isset($this->_fields['values']) && isset($this->_fields['params'])){
-            $fields = $this->_fields['fields'];
-            $values =  $this->_fields['values'];
-            $params = $this->_fields['params'];
-            $sql = "INSERT INTO $this->table ($fields) VALUES ($values)";
-            $this->query($sql, $params);
-        }
+        $fields = $this->_fields['keys'];
+        $values = $this->_fields['values'];
+        $params = $this->_fields['params'];
+        $sql = "INSERT INTO $this->table ($fields) VALUES ($values)";
+        $this->query($sql, $params);
     }
 
     /**
-     * @return array|null
+     * @return bool
      * return result after a request select
      */
-    function result(): ?array
+    function result()
     {
         $this->insert();
-        return $this->get_result();
+        return $this->_results;
     }
 
     /**
-     * return an error status when an error occur while doing an query
-     * @return mixed
+     * @return string
      */
-    function error()
+    function error(): string
     {
-        return $this->get_Error();
+        return $this->_error;
     }
 
     /**
      * @return int
-     * access the last id record after creating a new record
      */
     function lastId(): int
     {
-        return $this->get_lastid();
+        return $this->lastID;
     }
 }

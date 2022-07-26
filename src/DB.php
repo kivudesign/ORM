@@ -1,56 +1,78 @@
 <?php
-
+/**
+ * Wepesi ORM
+ * DB
+ * Ibrahim Mussa
+ * https://github.com/bim-g
+ */
 namespace Wepesi\App;
 use Exception;
 use PDO;
-class DB extends DB_Q
+use Wepesi\App\Traits\BuildQuery;
+
+class DB
 {
     private static ?DB $_instance = null;
     private $_query,
-        $select_db_query;
-    private bool $_error=false, $_results = false;
-    private  int $_lastid;
+        $query_transaction;
+    private ?string $_error;
+    private array $_results;
+    private  int $_lastID;
     private PDO $pdo;
     private string $_action="";
+    private int $_count;
     private array $option=[
         PDO::MYSQL_ATTR_INIT_COMMAND=>"SET NAMES utf8",
         PDO::ATTR_EMULATE_PREPARES=>false,
         PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION
     ]  ;
-    private int $_count;
-
+    use BuildQuery;
     private function __construct(string $host="",string $db_name="",string $user_name="",string $password="")
     {
         try {
+            $this->_results = [];
+            $this->_error = null;
+            $this->_lastID = -1;
+            $this->_count = 0;
+            //
             $this->pdo = new PDO("mysql:host=" . $host . ";dbname=" . $db_name.";charset=utf8mb4", $user_name,$password,$this->option);
-            parent::__construct($this->pdo);
         } catch (\PDOException $ex) {
-            die($ex->getMessage());
+            echo $ex->getMessage();
+            die();
         }
-    }
-    static function getInstance(string $hot,string $db_name,string $user_name,string $password): ?DB
-    {
-        if(!isset(self::$_instance)){
-            self::$_instance=new DB($hot,$db_name,$user_name,$password);
-        }
-        return self::$_instance;
     }
 
     /**
-     * @throws Exception
+     * @param array $config this config will store the database configuration, the host, database name, username and password.
+     * @return DB|null
      */
-    private function queryOperation(string $table_name, string  $actions): ?QueryTransactions
+    static function getInstance(array $config): ?DB
     {
-        if (strlen($table_name) < 1) {
-            throw new \Exception("table name should be a string");
+        try{
+            if(!isset($config['host']) || !$config['host']) throw new \Exception("host config params is not defined");
+            if(!isset($config['db_name']) || !$config['db_name']) throw new \Exception("db_name config params does not exist or is not set");
+            if(!isset($config['username']) || !$config['username']) throw new \Exception("database username config params does not exist or is not set");
+            if(!isset($config['password']) ) throw new \Exception("database password config params does not exist or is not set");
+
+            $hot=$config["host"];
+            $db_name=$config["db_name"];
+            $user_name=$config["username"];
+            $password=$config["password"];
+
+            if(!isset(self::$_instance)){
+                self::$_instance=new DB($hot,$db_name,$user_name,$password);
+            }
+            return self::$_instance;
+
+        }catch (\Exception $ex){
+            print_r(["exception"=>$ex->getMessage()]);
+            die();
         }
-        $this->_action=$actions;
-        return new QueryTransactions($this->pdo, $table_name, $actions);
     }
 
     /**
-     * @string :$table =>this is the name of the table where to get information
-     * this method allow to do a select field from  a $table with all the conditions defined ;
+     * @param string $table_name
+     * @return DB_Select
      * @throws Exception
      */
     function get(string $table_name): DB_Select
@@ -59,11 +81,11 @@ class DB extends DB_Q
     }
 
     /**
-     * @string :$table =>this is the name of the table where to get information
-     * this method allow to do a count the number of field on a $table with all the possible condition
+     * @param string $table_name
+     * @return DB_Select
      * @throws Exception
      */
-    function count(string $table_name): ?DB_Select
+    function count(string $table_name): DB_Select
     {
         return $this->select_option($table_name, "count");
     }
@@ -78,89 +100,86 @@ class DB extends DB_Q
         if (strlen($table_name) < 1) {
             throw new \Exception("table name should be a string");
         }
-        return $this->select_db_query = new DB_Select($this->pdo, $table_name, $action);
+        $this->query_transaction = new DB_Select($this->pdo, $table_name, $action);
+        return $this->query_transaction;
     }
 
     /**
      * @param string $table : this is the name of the table where to get information
      * @return DB_Insert
-     * @throws Exception
      *
      * this method will help create new row data
      */
-    function insert(string $table): ?DB_Insert
+    function insert(string $table): DB_Insert
     {
-        return $this->_query=new DB_Insert($this->pdo, $table);
+        $this->query_transaction = new DB_Insert($this->pdo, $table);
+        return $this->query_transaction;
     }
 
     /**
-     * @param string $table_name
-     * @return DBCreateMultiple
-     */
-    // function insertMultiple(string  $table_name)
-    // {
-    //     return $this->_query =new DBCreateMultiple($this->_pdo, $table_name);
-    // }
-
-    /**
      * @param string $table :  this is the name of the table where to get information
-     * @return QueryTransactions
-     * @throws Exception
-     * this method will help delete row data information
+     * @return DB_Delete
      */
-    function delete(string $table): ?QueryTransactions
+    function delete(string $table): DB_Delete
     {
-        return $this->queryOperation($table, "delete");
+        $this->query_transaction= new DB_Delete();
+        return $this->query_transaction;
     }
     //
 
     /**
      * @param string $table : this is the name of the table where to get information
-     * @return QueryTransactions
-     * @throws Exception
-     * this methode will help update row informations of a selected tables
+     * @return DB_Update
      */
-    function update(string $table): ?QueryTransactions
+    function update(string $table): DB_Update
     {
-        return $this->_query = $this->queryOperation($table, "update");
+        $this->query_transaction = new DB_Update();
+        return $this->query_transaction;
     }
     //
     function query($sql, array $params = []): DB
     {
-        $this->executeQuery($sql,$params);
+        $q = $this->executeQuery($sql,$params);
+        $this->_results = $q['result'];
+        $this->_count = $q['count'];
+        $this->_error = $q['error'];
+        $this->_lastID = $q['lastID'];
+
         return $this;
     }
-    // return the last id after an insert operation query
-    function lastId()
+
+    /**
+     * @return int
+     */
+    function lastId(): int
     {
-        return isset($this->_query) ? $this->_query->lastId() : $this->get_lastid();
+        if (isset($this->query_transaction) && method_exists($this->query_transaction, 'lastId')) {
+            $this->_count = $this->query_transaction->lastId();
+        }
+        return $this->_lastID;
     }
     /**
      * return an error status when an error occur while doing an query
      */
     function error()
     {
-        /** check if it was a select operation and if an error occur then return it
-         */
-        if(isset($this->select_db_query) ){
-            return $this->select_db_query->error();
+        if(isset($this->query_transaction) ){
+            $this->_error = $this->query_transaction->error();
         }
-        /** check if if was an (insert, update, select) method was called, and return if an error occur
-         */
-        else if(isset($this->_query)){
-            return $this->_query->error();
-        }else{
-            /** if it was written query, it will return the error, if it exist.
-            // otherwise, it will return false
-             */
-            return $this->get_Error();
-        }
+        return $this->_error;
     }
-    function result()
+
+    /**
+     * @return array
+     */
+    function result(): array
     {
-        return $this->get_result();
+        return $this->_results;
     }
     function rowCount(){
-        return isset($this->_query) ? $this->_query->count() : $this->get_rowCount();
+        if(isset($this->query_transaction) && method_exists($this->query_transaction,"count") ){
+            $this->_count = $this->query_transaction->count();
+        }
+        return $this->_count;
     }
 }
