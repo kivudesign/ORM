@@ -1,38 +1,48 @@
 <?php
-
+/**
+ * Wepesi ORM
+ * DB_Update
+ * Ibrahim Mussa
+ * https://github.com/bim-g
+ */
 namespace Wepesi\App;
 
-class DB_Select extends DB_Q
+use Wepesi\App\Traits\BuildQuery;
+
+class DB_Select
 {
-    private  $table, $action,$_leftJoin,$_rightJoin,$_error,$_dsc,$_asc,$_join,$orderBy,$groupBY;
-    private  array $_where=[],  $_fields=[];
-    private $_limit=null,  $_offset=null;
-    private $_join_comparison_sign=["=",">","<","!=","<>"];
+    private  ?string $table, $action,$_error,$_dsc,$_asc,$orderBy,$groupBY;
+    private  array $_where,  $_fields;
+    private ?int $_limit,  $_offset;
+    private array $_join_comparison_sign=["=",">","<","!=","<>"];
+    use BuildQuery;
+
     /**
-     *
-     * @param type $pdo
+     * DBSelect constructor.
+     * @param \PDO $pdo
      * @param string $table
-     * @param string $action
+     * @param string|null $action
      */
-    function __construct(\PDO $pdo, string $table, string $action="select")
+    function __construct(\PDO $pdo, string $table, string $action = null)
     {
         $this->table = $table;
-        $this->action=$action;
-        parent::__construct($pdo);
-//        $this->initInut();
-    }
-    private function initInut(){
-       $this->table="";$this->action="";$this->_leftJoin="";$this->_rightJoin="";$this->_error="";$this->_dsc="";$this->_asc="";$this->_join="";
-       $this->orderBy="";$this->groupBY="";
+        $this->_pdo = $pdo;
+        $this->action = $action;
+        $this->_dsc = $this->_asc=null;
+        $this->_where = $this->_fields =[];
+        $this->_error =null;
+        $this->orderBy = $this->groupBY =null;
+        $this->_limit = $this->_offset=null;
     }
 
     /**
      *
      * @param array $params
      * @return $this
-     * @throws \Exception
+     * @throws Exception
      */
-    function where(array $params = []){
+    function where(array $params = [])
+    {
         // select where <> update where
         /**
          * select WHERE format
@@ -49,125 +59,136 @@ class DB_Select extends DB_Q
             /**
              * defined comparison operator to avoid error while Passing operation witch does not exist
              */
-            $comparisonOperator = ["<", "<=", ">", ">=", "<>", "!=","like"];
+            $comparisonOperator = ['<', '<=', '>', '>=', '<>', '!=', 'like'];
             // defined logical operator
-            $logicalOperator = ["or", "not"];
+            $logicalOperator = ['or', 'not'];
             // chech if the array is multidimensional array
             $key = array_keys($params);
             $key_exist = is_string($key[0]);
             if ($key_exist) {
-                throw new \Exception("bad format, for where data");
+                throw new \Exception('bad format, for where data');
             }
             $where = is_array($params[0]) ? $params : [$params];
             $whereLen = count($where);
             //
-            $jointuresWhereCondition = "";
-            $defaultComparison = "=";
+            $jointuresWhereCondition = '';
+            $defaultComparison = '=';
             $lastIndexWhere = 1;
             $fieldValue = [];
             //
             foreach ($where as $WhereField) {
-                $defaultLogical = " AND ";
+                $defaultLogical = ' AND ';
                 $notComparison = null;
                 // check if there is a logical operator `or`||`and`
                 if (isset($WhereField[3])) {
                     // check id the defined operation exist in our defined tables
-                    $defaultLogical = in_array(strtolower($WhereField[3]), $logicalOperator) ? $WhereField[3] : " and ";
-                    if ($defaultLogical === "not") {
-                        $notComparison = " not ";
+                    $defaultLogical = in_array(strtolower($WhereField[3]), $logicalOperator) ? $WhereField[3] : ' and ';
+                    if ($defaultLogical === 'not') {
+                        $notComparison = ' not ';
                     }
                 }
                 // check the field exist and defined by default one
-                $_WhereField = strlen($WhereField[0]) > 0 ? $WhereField[0] : "id";
+                $_WhereField = strlen($WhereField[0]) > 0 ? $WhereField[0] : 'id';
                 // check if comparison  exist on the array
-                $defaultComparison = in_array($WhereField[1], $comparisonOperator) ? $WhereField[1] : "=";
+                $defaultComparison = in_array($WhereField[1], $comparisonOperator) ? $WhereField[1] : '=';
                 $jointuresWhereCondition .= " {$notComparison} {$_WhereField} {$defaultComparison}  ? ";
                 $valueTopush = isset($WhereField[2]) ? $WhereField[2] : null;
                 array_push($fieldValue, $valueTopush);
                 if ($lastIndexWhere < $whereLen) {
-                    if ($defaultLogical != "not") {
+                    if ($defaultLogical != 'not') {
                         $jointuresWhereCondition .= $defaultLogical;
                     }
                 }
                 $lastIndexWhere++;
             }
             $this->_where = [
-                "field" => " WHERE {$jointuresWhereCondition} ",
-                "value" => $fieldValue
+                'field' => " WHERE {$jointuresWhereCondition} ",
+                'value' => $fieldValue
             ];
         }
         return $this;
 
     }
+
     /**
      *
      * @param array $fields
-     * @return $this
+     * @return DB_Select
      */
-    function field(array $fields = [])
+    function field(array $fields = []): DB_Select
     {
         if (count($fields)) {
             $keys = $fields;
             $values = null;
             $this->_fields = [
-                "keys" => implode(',', $keys),
-                "values" => $values
+                'keys' => '' . implode(',', $keys) . '',
+                'values' => $values
             ];
         } else {
-            $this->_fields = "*";
+            $this->_fields = '*';
         }
         return $this;
     }
+
     /**
-     *
      * @param array $group
      * @return $this
      */
-    function groupBY(array $group = [])
+    function groupBY(array $group = []): DB_Select
     {
-//        if (count($group))  $this->groupBY = "group by field";
-//        return $this;
+        if (count($group)) $this->groupBY = 'group by field';
+        return $this;
     }
+
     /**
      *
      * @param string $order
      * @return $this
      */
-    function orderBy(string $order = null)
+    function orderBy(string $order = null): DB_Select
     {
-        if ($order) $this->orderBy = " ORDER BY ($order)";
+        if ($order) $this->orderBy = " order by ($order)";
         return $this;
     }
+
+    function random(): DB_Select
+    {
+        $this->orderBy = ' order by RAND()';
+        return $this;
+    }
+
     /**
      *
      * @return $this
      */
-    function ASC()
+    function ASC(): DB_Select
     {
         if ($this->orderBy) {
-            $this->_asc = " ASC";
+            $this->_asc = ' ASC';
             $this->_dsc = null;
         }
         return $this;
     }
+
     /**
      *
      * @return $this
      */
-    function DESC()
+    function DESC(): DB_Select
     {
         if ($this->orderBy) {
-            $this->_dsc = " DESC";
             $this->_asc = null;
+            $this->_dsc = ' DESC';
         }
         return $this;
     }
+
     /**
      *
      * @param int $limit
      * @return $this
      */
-    function limit(int $limit)
+    function limit(int $limit): DB_Select
     {
         $this->_limit = " LIMIT {$limit}";
         return $this;
@@ -177,102 +198,44 @@ class DB_Select extends DB_Q
      * @param int $offset
      * @return $this
      */
-    function offset(int $offset=0)
+    function offset(int $offset): DB_Select
     {
         $this->_offset = " OFFSET {$offset}";
         return $this;
     }
-
     /**
-     * @param string $table_name
-     * @param array $onParameters : this represent the field
-     * @return $this|false
-     * this module allow to do a single left join, in case of multiple join, it's recommend use to use the `query` method with is better
+     * @return array
      */
-    function leftJoin(string $table_name,array $onParameters=[]){
-        $on=null;
-        if(count($onParameters)==3) {
-            $_field1=$onParameters[0];
-            $_operator=$onParameters[1];
-            $_field2=$onParameters[2];
-            if(in_array($_operator,$this->_join_comparison_sign))$on=" ON {$_field1}{$_operator}{$_field2} ";
-        }
-        if(!$table_name)return  false;
-        $this->_leftJoin=" LEFT {$table_name} {$on} ";
-//        return $this;
-    }
-
-    /**
-     * @param string $table_name
-     * @param array $onParameters
-     * @return $this|false
-     */
-    function rightJoin(string $table_name,array $onParameters=[]){
-        try{
-            $on=null;
-            if(count($onParameters)==3) {
-                $_field1=$onParameters[0];
-                $_operator=$onParameters[1];
-                $_field2=$onParameters[2];
-                if(in_array($_operator,$this->_join_comparison_sign))$on=" ON {$_field1}{$_operator}{$_field2} ";
-            }
-            if(!$table_name)return  false;
-            $this->_leftJoin=" RIGHT {$table_name} {$on} ";
-//            return $this;
-        }catch (Exception $ex){
-            $this->_error = true;
-        }
-    }
-    /**
-     * @param string $table_name
-     * @param array $onParameters
-     * @return $this|false
-     * this module wil help only join single(one) table
-     * for multiple join better to use query method for better perfomances
-     */
-    function join(string $table_name,array $onParameters=[]){
-        try{
-            $on=null;
-            if(count($onParameters)==3) {
-                $_field1=$onParameters[0];
-                $_operator=$onParameters[1];
-                $_field2=$onParameters[2];
-                if(in_array($_operator,$this->_join_comparison_sign))$on=" ON {$_field1}{$_operator}{$_field2} ";
-            }
-            if(!$table_name)return  false;
-            $this->_leftJoin=" JOIN {$table_name} {$on} ";
-//            return $this;
-        }catch (Exception $ex){
-            $this->_error = true;
-        }
-    }
-    /**
-     *
-     * @return type
-     */
-    private function select()
+    private function select(): array
     {
-        $fields = isset($this->_fields['keys']) ? $this->_fields['keys'] : "*";
+        $fields = $this->_fields['keys'] ?? '*';
+        $WHERE = $this->_where['field'] ?? '';
+        $params = $this->_where['value'] ?? [];
         //
-        $WHERE = isset($this->_where['field']) ? $this->_where['field'] : "";
-        $params = isset($this->_where['value']) ? $this->_where['value'] : [];
+        $sortedASC_DESC = ($this->_dsc || $this->_asc) ? ($this->_dsc ?? $this->_asc) : null;
         //
-        $sortedASC_DESC = $this->_asc ? $this->_asc : ($this->_dsc ? $this->_dsc : null);
-        $_jointure="";
-        //
-        $sql = "SELECT {$fields} FROM {$this->table} {$_jointure} " . $WHERE . $this->groupBY . $this->orderBy . $sortedASC_DESC . $this->_limit . $this->_offset;
-        return $this->query($sql, $params);
+        $sql = "SELECT {$fields} FROM {$this->table} " . $WHERE . $this->groupBY . $this->orderBy . $sortedASC_DESC . $this->_limit . $this->_offset;
+        $this->query($sql, $params);
+        return [
+            'sql' => $sql,
+            'params' => $params
+        ];
     }
+
     /**
      *
-     * @return type
      */
-    private function Totalcount(){
-        $WHERE = isset($this->_where['field']) ? $this->_where['field'] : "";
-        $params = isset($this->_where['value']) ? $this->_where['value'] : [];
-        $sql ="SELECT COUNT(*) as count FROM {$this->table} ". $WHERE;
-        return $this->query($sql, $params);
+    private function count_total(): array
+    {
+        $WHERE = $this->_where['field'] ?? '';
+        $params = $this->_where['value'] ?? [];
+        $sql = "SELECT COUNT(*) as count FROM {$this->table} " . $WHERE;
+        return [
+            'sql' => $sql,
+            'params' => $params
+        ];
     }
+
     /**
      *
      * @param string $sql
@@ -280,39 +243,42 @@ class DB_Select extends DB_Q
      */
     private function query(string $sql, array $params = [])
     {
-        $this->executeQuery($sql, $params);
-//        $this->_results = $q->result();
-//        $this->_count = $q->rowCount();
-//        $this->_error = $q->getError();
-//        return $this;
+        $q = $this->executeQuery($this->_pdo, $sql, $params);
+        $this->_results = $q['result'];
+        $this->_count = $q['count'];
+        $this->_error = $q['error'];
     }
+
     /**
      *
      */
-    private function build(){
-        if($this->action && $this->action=="count"){
-            $this->Totalcount();
-        }else{
-            $this->select();
+    private function build()
+    {
+        $query = [];
+        if ($this->action == 'count') {
+            $query = $this->count_total();
+        } else {
+            $query = $this->select();
         }
+        $this->query($query['sql'], $query['params']);
     }
+
     /**
      *
-     * @return object
+     * @return bool|int
      * execute query to get result
      */
     function result()
     {
         $this->build();
-        return $this->get_result();
+        return $this->action == 'count' ? count($this->_results) : $this->_results;
     }
+
     /**
-     *
-     * @return type
-     * return an error status when an error occur while doing an query
+     * @return mixed
      */
     function error()
     {
-        return $this->get_Error();
+        return $this->_error;
     }
 }

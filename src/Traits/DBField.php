@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Wepesi\App;
+namespace Wepesi\App\Traits;
 
 
 trait DBField

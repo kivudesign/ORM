@@ -1,6 +1,6 @@
 {
     "name": "wepesi/orm",
-    "description": "simple orm build for php",
+    "description": "simple orm build for php application",
     "type": "library",
     "license": "Apache-2.0",
     "minimum-stability": "beta",
@@ -17,5 +17,8 @@
     ],
     "require": {
         "php": ">=7.4"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5"
     }
 }
