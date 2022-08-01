@@ -245,7 +245,7 @@ class DB_Select
     {
         $q = $this->executeQuery($this->_pdo, $sql, $params);
         $this->_results = $q['result'];
-        $this->_count = $q['count'];
+        $this->_count = $q['count']??0;
         $this->_error = $q['error'];
     }
 

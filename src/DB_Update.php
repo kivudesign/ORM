@@ -125,11 +125,11 @@ class DB_Update
      * @return $this
      * this module is use to execute sql request
      */
-    private function query($sql, array $params = []): DB_Update
+    private function query($sql, array $params = [])
     {
         $q = $this->executeQuery($this->_pdo, $sql, $params);
         $this->_results = $q['result'];
-        $this->_count = $q['count'];
+        $this->_count = $q['count']??0;
         $this->_error = $q['error'];
     }
 

@@ -70,7 +70,7 @@ class DB_Insert
         $q = $this->executeQuery($this->pdo, $sql, $params);
         $this->_results = $q['result'];
         $this->_error = $q['error'];
-        $this->lastID = $q['lastID'];
+        $this->lastID = $q['lastID']??0;
     }
 
     /**
