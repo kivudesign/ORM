@@ -43,16 +43,6 @@ class DB_Select
      */
     function where(array $params = [])
     {
-        // select where <> update where
-        /**
-         * select WHERE format
-         * [
-         *  [field,comparisonOperator,value,logicOperator]
-         * ]
-         * eg:[
-         *  ["name","=","john","and"]
-         * ]
-         */
         if (count($params)) {
             // $params = [];
             //
@@ -134,9 +124,9 @@ class DB_Select
      * @param array $group
      * @return $this
      */
-    function groupBY(array $group = []): DB_Select
+    function groupBY(string $field): DB_Select
     {
-        if (count($group)) $this->groupBY = 'group by field';
+        $this->groupBY = "group by $field";
         return $this;
     }
 
@@ -214,7 +204,7 @@ class DB_Select
         //
         $sortedASC_DESC = ($this->_dsc || $this->_asc) ? ($this->_dsc ?? $this->_asc) : null;
         //
-        $sql = "SELECT {$fields} FROM {$this->table} " . $WHERE . $this->groupBY . $this->orderBy . $sortedASC_DESC . $this->_limit . $this->_offset;
+        $sql = "SELECT " . $fields . " FROM " . " $this->table " . $WHERE . $this->groupBY . $this->orderBy . $sortedASC_DESC . $this->_limit . $this->_offset;
         $this->query($sql, $params);
         return [
             'sql' => $sql,
@@ -245,7 +235,7 @@ class DB_Select
     {
         $q = $this->executeQuery($this->_pdo, $sql, $params);
         $this->_results = $q['result'];
-        $this->_count = $q['count'];
+        $this->_count = $q['count']??0;
         $this->_error = $q['error'];
     }
 
