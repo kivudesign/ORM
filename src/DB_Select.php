@@ -14,7 +14,7 @@ class DB_Select
     private  ?string $table, $action,$_error,$_dsc,$_asc,$orderBy,$groupBY;
     private  array $_where,  $_fields;
     private ?int $_limit,  $_offset;
-    private array $_join_comparison_sign=["=",">","<","!=","<>"];
+    private array $_join_comparison_sign;
     use BuildQuery;
 
     /**
@@ -30,18 +30,18 @@ class DB_Select
         $this->action = $action;
         $this->_dsc = $this->_asc=null;
         $this->_where = $this->_fields =[];
-        $this->_error =null;
-        $this->orderBy = $this->groupBY =null;
-        $this->_limit = $this->_offset=null;
+        $this->_error = null;
+        $this->orderBy = $this->groupBY = null;
+        $this->_limit = $this->_offset = null;
+        $this->_join_comparison_sign = ['=', '>', '<', '!=', '<>'];
     }
 
     /**
-     *
      * @param array $params
      * @return $this
-     * @throws Exception
+     * @throws \Exception
      */
-    function where(array $params = [])
+    function where(array $params = []): DB_Select
     {
         if (count($params)) {
             // $params = [];

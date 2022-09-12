@@ -7,7 +7,6 @@
  */
 namespace Wepesi\App;
 use Exception;
-use PDO;
 use Wepesi\App\Traits\BuildQuery;
 
 class DB
@@ -18,13 +17,13 @@ class DB
     private ?string $_error;
     private array $_results;
     private  int $_lastID;
-    private PDO $pdo;
+    private \PDO $pdo;
     private string $_action="";
     private int $_count;
     private array $option=[
-        PDO::MYSQL_ATTR_INIT_COMMAND=>"SET NAMES utf8",
-        PDO::ATTR_EMULATE_PREPARES=>false,
-        PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION
+        \PDO::MYSQL_ATTR_INIT_COMMAND=>"SET NAMES utf8",
+        \PDO::ATTR_EMULATE_PREPARES=>false,
+        \PDO::ATTR_ERRMODE=>\PDO::ERRMODE_EXCEPTION
     ]  ;
     use BuildQuery;
     private function __construct(string $host="",string $db_name="",string $user_name="",string $password="")
@@ -35,7 +34,7 @@ class DB
             $this->_lastID = -1;
             $this->_count = 0;
             //
-            $this->pdo = new PDO("mysql:host=" . $host . ";dbname=" . $db_name.";charset=utf8mb4", $user_name,$password,$this->option);
+            $this->pdo = new \PDO("mysql:host=" . $host . ";dbname=" . $db_name.";charset=utf8mb4", $user_name,$password,$this->option);
         } catch (\PDOException $ex) {
             echo $ex->getMessage();
             die();
@@ -143,7 +142,7 @@ class DB
         $this->_results = $q['result'];
         $this->_count = $q['count'];
         $this->_error = $q['error'];
-        $this->_lastID = $q['lastID'];
+        $this->_lastID = $q['lastID']??-1;
 
         return $this;
     }
@@ -154,7 +153,7 @@ class DB
     function lastId(): int
     {
         if (isset($this->query_transaction) && method_exists($this->query_transaction, 'lastId')) {
-            $this->_count = $this->query_transaction->lastId();
+            $this->_lastID = $this->query_transaction->lastId();
         }
         return $this->_lastID;
     }
