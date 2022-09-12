@@ -7,7 +7,9 @@
  */
 namespace Wepesi\App;
 
-class DB_Insert 
+use Wepesi\App\Traits\BuildQuery;
+
+class DB_Insert
 {
     private string $table;
     private \PDO $pdo;
@@ -69,8 +71,8 @@ class DB_Insert
     {
         $q = $this->executeQuery($this->pdo, $sql, $params);
         $this->_results = $q['result'];
-        $this->_error = $q['error'];
         $this->lastID = $q['lastID']??0;
+        $this->_error = $q['error'];
     }
 
     /**

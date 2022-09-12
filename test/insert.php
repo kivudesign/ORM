@@ -10,7 +10,8 @@ try {
     if($db->error()){
         throw new \Exception($db->error());
     }
-    var_dump(["last insert ID : "=>$db->lastId()]);
+    $field["id"] = $db->lastId();
+    var_dump($field);
 } catch (Exception $e) {
     var_dump($e->getMessage());
 }
