@@ -1,5 +1,5 @@
 <?php
-$db=$db??[];
+$db = $db??[];
 $field = [
     "userid" => 1,
     "message" => "hello from wepesi",

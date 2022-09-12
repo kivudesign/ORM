@@ -20,11 +20,7 @@ class DB
     private \PDO $pdo;
     private string $_action="";
     private int $_count;
-    private array $option=[
-        \PDO::MYSQL_ATTR_INIT_COMMAND=>"SET NAMES utf8",
-        \PDO::ATTR_EMULATE_PREPARES=>false,
-        \PDO::ATTR_ERRMODE=>\PDO::ERRMODE_EXCEPTION
-    ]  ;
+    private string $db_name;
     use BuildQuery;
     private function __construct(string $host="",string $db_name="",string $user_name="",string $password="")
     {
@@ -33,8 +29,13 @@ class DB
             $this->_error = null;
             $this->_lastID = -1;
             $this->_count = 0;
+            $this->db_name = $db_name;
             //
-            $this->pdo = new \PDO("mysql:host=" . $host . ";dbname=" . $db_name.";charset=utf8mb4", $user_name,$password,$this->option);
+            $this->pdo = new \PDO("mysql:host=" . $host . ";dbname=" . $db_name.";charset=utf8mb4", $user_name,$password);
+            $this->pdo->setAttribute(\PDO::MYSQL_ATTR_INIT_COMMAND,'SET NAMES utf8');
+            $this->pdo->setAttribute(\PDO::ATTR_EMULATE_PREPARES,false);
+            $this->pdo->setAttribute(\PDO::ATTR_PERSISTENT,true);
+            $this->pdo->setAttribute(\PDO::ATTR_ERRMODE,\PDO::ERRMODE_EXCEPTION);
         } catch (\PDOException $ex) {
             echo $ex->getMessage();
             die();
@@ -180,5 +181,32 @@ class DB
             $this->_count = $this->query_transaction->count();
         }
         return $this->_count;
+    }
+
+    function beginTransaction(): bool
+    {
+        return $this->pdo->beginTransaction();
+    }
+    function commit(){
+        return $this->pdo->commit();
+    }
+    function rollBack(){
+        return $this->pdo->rollBack();
+    }
+
+    /**
+     * @throws Exception
+     */
+    function transaction(\Closure $callable){
+        try{
+            $this->pdo->beginTransaction();
+            $callable($this);
+            $this->pdo->commit();
+        }catch (\Exception $ex){
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+            throw $ex;
+        }
     }
 }
