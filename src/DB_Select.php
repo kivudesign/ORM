@@ -11,10 +11,20 @@ use Wepesi\App\Traits\BuildQuery;
 
 class DB_Select
 {
-    private  ?string $table, $action,$_error,$_dsc,$_asc,$orderBy,$groupBY;
+    private  string $table, $_dsc,$_asc;
+    private ?string $_error,$orderBy,$action,$groupBY;
     private  array $_where,  $_fields;
     private ?int $_limit,  $_offset;
     private array $_join_comparison_sign;
+    private \PDO $_pdo;
+    /**
+     * @var mixed
+     */
+    private array $_results;
+    /**
+     * @var int|mixed
+     */
+    private int $_count;
     use BuildQuery;
 
     /**
@@ -28,7 +38,7 @@ class DB_Select
         $this->table = $table;
         $this->_pdo = $pdo;
         $this->action = $action;
-        $this->_dsc = $this->_asc=null;
+        $this->_dsc = $this->_asc = "";
         $this->_where = $this->_fields =[];
         $this->_error = null;
         $this->orderBy = $this->groupBY = null;
@@ -126,7 +136,7 @@ class DB_Select
      */
     function groupBY(string $field): DB_Select
     {
-        $this->groupBY = "group by $field";
+        if($field) $this->groupBY = "group by $field";
         return $this;
     }
 
@@ -155,7 +165,7 @@ class DB_Select
     {
         if ($this->orderBy) {
             $this->_asc = ' ASC';
-            $this->_dsc = null;
+            $this->_dsc = "";
         }
         return $this;
     }
@@ -167,7 +177,7 @@ class DB_Select
     function DESC(): DB_Select
     {
         if ($this->orderBy) {
-            $this->_asc = null;
+            $this->_asc = "";
             $this->_dsc = ' DESC';
         }
         return $this;
@@ -202,9 +212,7 @@ class DB_Select
         $WHERE = $this->_where['field'] ?? '';
         $params = $this->_where['value'] ?? [];
         //
-        $sortedASC_DESC = ($this->_dsc || $this->_asc) ? ($this->_dsc ?? $this->_asc) : null;
-        //
-        $sql = "SELECT " . $fields . " FROM " . " $this->table " . $WHERE . $this->groupBY . $this->orderBy . $sortedASC_DESC . $this->_limit . $this->_offset;
+        $sql = "SELECT " . $fields . " FROM " . " $this->table " . $WHERE . $this->groupBY . $this->orderBy . $this->_dsc . $this->_asc . $this->_limit . $this->_offset;
         $this->query($sql, $params);
         return [
             'sql' => $sql,
