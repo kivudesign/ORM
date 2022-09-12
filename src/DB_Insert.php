@@ -71,8 +71,8 @@ class DB_Insert
     {
         $q = $this->executeQuery($this->pdo, $sql, $params);
         $this->_results = $q['result'];
+        $this->_error = $q['error']??"";
         $this->lastID = $q['lastID']??0;
-        $this->_error = $q['error'];
     }
 
     /**
@@ -88,10 +88,10 @@ class DB_Insert
     }
 
     /**
-     * @return bool
+     * @return array
      * return result after a request select
      */
-    function result()
+    function result(): array
     {
         $this->insert();
         return $this->_results;
