@@ -139,9 +139,9 @@ class DB
     //
     function query($sql, array $params = []): DB
     {
-        $q = $this->executeQuery($sql,$params);
+        $q = $this->executeQuery($this->pdo,$sql,$params);
         $this->_results = $q['result'];
-        $this->_count = $q['count'];
+        $this->_count = $q['count']??0;
         $this->_error = $q['error'];
         $this->_lastID = $q['lastID']??-1;
 
@@ -206,6 +206,23 @@ class DB
             if ($this->pdo->inTransaction()) {
                 $this->pdo->rollBack();
             }
+            throw $ex;
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    function convertToInnoDB(){
+        try {
+            $params =[$this->db_name,"MyISAM"];
+            $sql = "SELECT TABLE_NAME FROM information_schema.tables WHERE table_schema = ? AND `ENGINE` = ?";
+            $result  = self::query($sql,$params)->result();
+            foreach ($result as $table){
+                $sql = "ALTER TABLE $table->TABLE_NAME ENGINE=InnoDB";
+                $this->query($sql);
+            }
+        }catch (\Exception $ex){
             throw $ex;
         }
     }

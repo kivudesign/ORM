@@ -170,9 +170,9 @@ corresponding sql:
 the example bellow describe how it can be used. with the `query` method use the `result()` method to get the result.
 
 ### Transaction
-For so many reason you would like to implement a transaction in case one of your operation failed.
+For so many reasons you would like to implement a transaction in case one of your operation failed.
 Take caution only `InnoDB` support transaction in order to see the result you should be sure your `ENGINE` is innoDB,
-in case you are not sure you can convert your tables only with `convertToInooD` method.
+in case you are not sure you can convert your tables only with `convertToInnoDB` method.
 There are two ways to use transaction as been defined.
 you can manage by your own how, end when to uply transaction or use a buildin `transaction` method.
 It is recommended to use try catch in or to fulfil the operation.
