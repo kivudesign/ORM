@@ -131,7 +131,7 @@ class DB_Select
     }
 
     /**
-     * @param array $group
+     * @param string $field
      * @return $this
      */
     function groupBY(string $field): DB_Select
@@ -142,7 +142,7 @@ class DB_Select
 
     /**
      *
-     * @param string $order
+     * @param string|null $order
      * @return $this
      */
     function orderBy(string $order = null): DB_Select
@@ -263,13 +263,13 @@ class DB_Select
 
     /**
      *
-     * @return bool|int
+     * @return array|int
      * execute query to get result
      */
     function result()
     {
         $this->build();
-        return $this->action == 'count' ? count($this->_results) : $this->_results;
+        return $this->action == 'count' ? $this->_results[0] : $this->_results;
     }
 
     /**
