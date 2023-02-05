@@ -66,7 +66,7 @@ the corresponding `SQL`
   * The third position is the value of your condition,
   * and the forth position is for the operator `and`,`or`and `not`, by default it `and`, and it is required whene there is multiple conditiontions.
 ```php
-    $where=[
+    $where = [
         ['id',"=",2],
         ['username',"like",'admin','or'],
         ['email',"like",'admin']
@@ -90,7 +90,13 @@ in case there is problem as `error` method can be called to check if there is an
 $result = $db->get("users")->field(['email','address'])->orderBy("id")->offset(0)->limit(30)->DESC()->result();
 if($db->error()) print_r($db->error());
 ```
-
+Sometimes you want to count record instead if listing them, `count` method is part of get with return an object count.
+use count object to access the value return.
+```php
+    $count_users = $db->count("users")->field(['email','address'])->where($where)->result();
+    echo $count_users->count;
+//
+```
 * `insert` is used to record data. the method take table name as parameter, 
   use field method to pass data to be saved.
   in case your information are correct the `db` instance you can call`lastId` method to get the id of the inserted record.
@@ -98,7 +104,7 @@ if($db->error()) print_r($db->error());
     $data = [
         "userid" => 2,
         "message" => "hello from wepesi",
-        "datecreated" => Date('Y-m-d H:i:s')
+        "date_created" => Date('Y-m-d H:i:s')
     ];
     try {
             $db->insert("message")->field($data)->result();
@@ -172,14 +178,15 @@ the example bellow describe how it can be used. with the `query` method use the 
 ### Transaction
 For so many reasons you would like to implement a transaction in case one of your operation failed.
 Take caution only `InnoDB` support transaction in order to see the result you should be sure your `ENGINE` is innoDB,
-in case you are not sure you can convert your tables only with `convertToInnoDB` method.
+in case you are not sure about the database engine you can convert your tables only with `convertMyISAMToInnoDB` method.
+That method will help convert `MyISAM` engine to `InnoDB`.
 There are two ways to use transaction as been defined.
-you can manage by your own how, end when to uply transaction or use a buildin `transaction` method.
+you can manage by your own how, end when to apply transaction or use a builtin `transaction` method.
 It is recommended to use try catch in or to fulfil the operation.
-* #### One
+* #### pdo transaction
 The transaction has tree method to used in order to work properly, we have:
 - `beginTransaction` : this method is used to start a transaction, and is shoudl be place at the beginning operation where the transaction will occur.
-- `commit` : used this method when the operation succeed.
+- `commit` : used this method when the operation succeeds.
 - `rollBack` : is used to cancel all the operation.
 ```php
   try{
@@ -218,10 +225,10 @@ The transaction has tree method to used in order to work properly, we have:
   }
 ```
 
-* #### two
-`transaction` : is method support closure method to be passed as parameter.  
+* #### Transaction as callback
+method support closure method to be passed as parameter.  
 You don't need to manage every situation of the transaction,
-`transction` method help you the focus  implementation, and it will do the job for you.
+the method help you the focus implementation, and it will do the job for you.
 ```php
     $user = [
       "fullname" => "Celestin Doe",
