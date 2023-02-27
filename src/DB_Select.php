@@ -39,7 +39,8 @@ class DB_Select
         $this->_pdo = $pdo;
         $this->action = $action;
         $this->_dsc = $this->_asc = "";
-        $this->_where = $this->_fields =[];
+        $this->_where =[];
+        $this->_fields =['keys' => '*'];
         $this->_error = null;
         $this->orderBy = $this->groupBY = null;
         $this->_limit = $this->_offset = null;
@@ -124,8 +125,6 @@ class DB_Select
                 'keys' => '' . implode(',', $keys) . '',
                 'values' => $values
             ];
-        } else {
-            $this->_fields = '*';
         }
         return $this;
     }
