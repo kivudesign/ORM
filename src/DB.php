@@ -9,6 +9,8 @@
 namespace Wepesi\App;
 
 use Wepesi\App\Traits\BuildQuery;
+use Wepesi\Resolver\Option;
+use Wepesi\Resolver\OptionsResolver;
 
 /**
  *
@@ -63,7 +65,7 @@ class DB
      * @param string $user_name
      * @param string $password
      */
-    private function __construct(string $host = "", string $db_name = "", string $user_name = "", string $password = "")
+    private function __construct(string $host = "", string $db_name = "", string $user_name = "", string $password = "",string $port)
     {
         try {
             $this->_results = [];
@@ -72,7 +74,7 @@ class DB
             $this->_count = 0;
             $this->db_name = $db_name;
             //
-            $this->pdo = new \PDO("mysql:host=" . $host . ";dbname=" . $db_name . ";charset=utf8mb4", $user_name, $password);
+            $this->pdo = new \PDO("mysql:host=" . $host . ";port=" . $port . ";dbname=" . $db_name . ";charset=utf8mb4", $user_name, $password);
             $this->pdo->setAttribute(\PDO::MYSQL_ATTR_INIT_COMMAND, 'SET NAMES utf8');
             $this->pdo->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
             $this->pdo->setAttribute(\PDO::ATTR_PERSISTENT, true);
@@ -91,18 +93,25 @@ class DB
     public static function getInstance(array $config): ?DB
     {
         try {
-            if (!isset($config['host']) || !$config['host']) throw new \Exception("host config params is not defined");
-            if (!isset($config['db_name']) || !$config['db_name']) throw new \Exception("db_name config params does not exist or is not set");
-            if (!isset($config['username']) || !$config['username']) throw new \Exception("database username config params does not exist or is not set");
-            if (!isset($config['password'])) throw new \Exception("database password config params does not exist or is not set");
-
+            $resolver = new OptionsResolver([
+                (new Option('host')),
+                (new Option('db_name')),
+                (new Option('username')),
+                (new Option('password')),
+                (new Option('port'))->setDefaultValue('3309')
+            ]);
+            $option = $resolver->resolve($config);
+            if (isset($options['InvalidArgumentException'])){
+                throw new \Exception($options['InvalidArgumentException']);
+            }
             $hot = $config["host"];
             $db_name = $config["db_name"];
             $user_name = $config["username"];
             $password = $config["password"];
+            $port = $config["port"] ?? '3309';
 
             if (!isset(self::$_instance)) {
-                self::$_instance = new DB($hot, $db_name, $user_name, $password);
+                self::$_instance = new DB($hot, $db_name, $user_name, $password, $port);
             }
             return self::$_instance;
 
@@ -199,13 +208,9 @@ class DB
      * @return int
      * return total of rows selected
      */
-    public function rowCount()
+    public function rowCount(): int
     {
-//        var_dump($this->_count);
-//        if (isset($this->query_transaction) && method_exists($this->query_transaction, "count")) {
-//        }
-        return $this->query_transaction->count();
-//        return $this->_count;
+        return $this->query_transaction->count() ?? $this->_count;
     }
 
     /**

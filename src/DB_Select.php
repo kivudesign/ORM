@@ -15,12 +15,7 @@ use Wepesi\App\Provider\DbProvider;
  */
 class DB_Select extends DbProvider
 {
-    /**
-     * @var string
-     */
-    /**
-     * @var string
-     */
+
     /**
      * @var string
      */
@@ -30,16 +25,12 @@ class DB_Select extends DbProvider
      * @var string|null
      */
     private ?string $orderBy, $action, $groupBY;
-    /**
-     * @var array
-     */
+
     /**
      * @var array
      */
     private array $_where, $_fields;
-    /**
-     * @var int|null
-     */
+
     /**
      * @var int|null
      */
