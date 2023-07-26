@@ -5,33 +5,50 @@
  * Ibrahim Mussa
  * https://github.com/bim-g
  */
+
 namespace Wepesi\App;
 
+use Wepesi\App\Provider\DbProvider;
 use Wepesi\App\Traits\BuildQuery;
 
-class DB_Update
+/**
+ *
+ */
+class DB_Update extends DbProvider
 {
-    private \PDO $_pdo;
+    /**
+     * @var string
+     */
     private string $table;
+    /**
+     * @var array
+     */
     private array $_where;
+    /**
+     * @var array
+     */
     private array $_fields;
-    private ?string $_error;
-    private array $_results;
-    private int $_count;
-    use BuildQuery;
 
-    function __construct(\PDO $pdo, string $table)
+    /**
+     * @param \PDO $pdo
+     * @param string $table
+     */
+    public function __construct(\PDO $pdo, string $table)
     {
         $this->table = $table;
-        $this->_pdo = $pdo;
+        $this->pdo = $pdo;
         $this->_fields = [];
-        $this->_results=[];
-        $this->_where=[];
-        $this->_fields=[];
-        $this->_count=0;
+        $this->result = [];
+        $this->_where = [];
+        $this->_fields = [];
+        $this->_count = 0;
     }
 
-    function where(array $where = []): DB_Update
+    /**
+     * @param array $where
+     * @return $this
+     */
+    public function where(array $where = []): DB_Update
     {
         if (count($where)) {
             $params = [];
@@ -64,7 +81,7 @@ class DB_Update
                 $jointure_Where_Condition .= $notComparison . $where_field_name . $defaultComparison . ' ? ';
                 $where_field_value = $WhereField[2] ?? null;
                 array_push($fieldValue, $where_field_value);
-//
+
                 $params[$where_field_name] = $where_field_value;
                 if ($lastIndexWhere < $whereLen) {
                     if ($default_logical_operator != 'not') {
@@ -84,9 +101,11 @@ class DB_Update
         return $this;
 
     }
-
-    //
-    function field(array $fields = []): DB_Update
+    /**
+     * @param array $fields
+     * @return $this
+     */
+    public function field(array $fields = []): DB_Update
     {
         if (count($fields) && !$this->_fields) {
             $keys = $fields;
@@ -120,17 +139,13 @@ class DB_Update
     }
 
     /**
-     * @param $sql
-     * @param array $params
-     * @return $this
-     * this module is use to execute sql request
+     * @return array
+     * return result after a request select
      */
-    private function query($sql, array $params = [])
+    public function result(): array
     {
-        $q = $this->executeQuery($this->_pdo, $sql, $params);
-        $this->_results = $q['result'];
-        $this->_count = $q['count']??0;
-        $this->_error = $q['error'];
+        $this->update();
+        return $this->result;
     }
 
     /**
@@ -148,29 +163,12 @@ class DB_Update
         $this->query($sql, $params);
     }
 
-    /**
-     * @return array
-     * return result after a request select
-     */
-    function result(): array
-    {
-        $this->update();
-        return $this->_results;
-    }
-
-    /**
-     * @return string|null
-     */
-    function error(): ?string
-    {
-        return $this->_error;
-    }
 
     /**
      * @return int
      * return counted rows of a select query
      */
-    function count(): int
+    public function count(): int
     {
         return $this->_count;
     }

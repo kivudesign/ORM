@@ -4,9 +4,17 @@
 namespace Wepesi\App\Traits;
 
 
+/**
+ *
+ */
 trait DBField
 {
-    function field_params(array $fields = [],string $action)
+    /**
+     * @param array $fields
+     * @param string $action
+     * @return array|string
+     */
+    public function field_params(array $fields = [], string $action)
     {
         if (count($fields) && !$this->_fields && (strtolower($action) != "insert" || strtolower($action) != "update")) {
             $keys = $fields;
@@ -14,21 +22,21 @@ trait DBField
             $x = 1;
             $keys = array_keys($fields);
             $values = null;
-            $_trim_key=[];
+            $_trim_key = [];
             foreach ($fields as $field) {
                 $values .= "? ";
                 if ($x < count($fields)) {
                     $values .= ', ';
                 }
                 //remove white space around the collum name
-                array_push($_trim_key,trim($keys[($x-1)]));
+                array_push($_trim_key, trim($keys[($x - 1)]));
                 $x++;
             }
-            $keys=$_trim_key;
-            $implode_keys= "`" . implode('`,`', $keys) . "`";
-            if($action=="update"){
-                $implode_keys= "`" . implode('`= ?,`', $keys) . "`";
-                $implode_keys.="=?";
+            $keys = $_trim_key;
+            $implode_keys = "`" . implode('`,`', $keys) . "`";
+            if ($action == "update") {
+                $implode_keys = "`" . implode('`= ?,`', $keys) . "`";
+                $implode_keys .= "=?";
             }
             return [
                 "fields" => $implode_keys,
@@ -36,7 +44,7 @@ trait DBField
                 "params" => $params
             ];
 
-        }else{
+        } else {
             return ("This method try to access undefined method");
         }
     }

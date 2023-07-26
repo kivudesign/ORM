@@ -5,27 +5,49 @@
  * Ibrahim Mussa
  * https://github.com/bim-g
  */
+
 namespace Wepesi\App;
 
-use Wepesi\App\Traits\BuildQuery;
+use Wepesi\App\Provider\DbProvider;
 
-class DB_Select
+/**
+ *
+ */
+class DB_Select extends DbProvider
 {
-    private  string $table, $_dsc,$_asc;
-    private ?string $_error,$orderBy,$action,$groupBY;
-    private  array $_where,  $_fields;
-    private ?int $_limit,  $_offset;
+    /**
+     * @var string
+     */
+    /**
+     * @var string
+     */
+    /**
+     * @var string
+     */
+    private string $table, $_dsc, $_asc;
+
+    /**
+     * @var string|null
+     */
+    private ?string $orderBy, $action, $groupBY;
+    /**
+     * @var array
+     */
+    /**
+     * @var array
+     */
+    private array $_where, $_fields;
+    /**
+     * @var int|null
+     */
+    /**
+     * @var int|null
+     */
+    private ?int $_limit, $_offset;
+    /**
+     * @var string[]
+     */
     private array $_join_comparison_sign;
-    private \PDO $_pdo;
-    /**
-     * @var mixed
-     */
-    private array $_results;
-    /**
-     * @var int|mixed
-     */
-    private int $_count;
-    use BuildQuery;
 
     /**
      * DBSelect constructor.
@@ -33,15 +55,13 @@ class DB_Select
      * @param string $table
      * @param string|null $action
      */
-    function __construct(\PDO $pdo, string $table, string $action = null)
+    public function __construct(\PDO $pdo, string $table, string $action = null)
     {
         $this->table = $table;
-        $this->_pdo = $pdo;
+        $this->pdo = $pdo;
         $this->action = $action;
         $this->_dsc = $this->_asc = "";
-        $this->_where =[];
-        $this->_fields =['keys' => '*'];
-        $this->_error = null;
+        $this->_where = $this->_fields = [];
         $this->orderBy = $this->groupBY = null;
         $this->_limit = $this->_offset = null;
         $this->_join_comparison_sign = ['=', '>', '<', '!=', '<>'];
@@ -52,7 +72,7 @@ class DB_Select
      * @return $this
      * @throws \Exception
      */
-    function where(array $params = []): DB_Select
+    public function where(array $params = []): DB_Select
     {
         if (count($params)) {
             // $params = [];
@@ -63,7 +83,7 @@ class DB_Select
             $comparisonOperator = ['<', '<=', '>', '>=', '<>', '!=', 'like'];
             // defined logical operator
             $logicalOperator = ['or', 'not'];
-            // chech if the array is multidimensional array
+            // check if the array is multidimensional array
             $key = array_keys($params);
             $key_exist = is_string($key[0]);
             if ($key_exist) {
@@ -116,7 +136,7 @@ class DB_Select
      * @param array $fields
      * @return DB_Select
      */
-    function field(array $fields = []): DB_Select
+    public function field(array $fields = []): DB_Select
     {
         if (count($fields)) {
             $keys = $fields;
@@ -133,9 +153,9 @@ class DB_Select
      * @param string $field
      * @return $this
      */
-    function groupBY(string $field): DB_Select
+    public function groupBY(string $field): DB_Select
     {
-        if($field) $this->groupBY = "group by $field";
+        if ($field) $this->groupBY = "group by $field";
         return $this;
     }
 
@@ -144,13 +164,16 @@ class DB_Select
      * @param string|null $order
      * @return $this
      */
-    function orderBy(string $order = null): DB_Select
+    public function orderBy(string $order = null): DB_Select
     {
         if ($order) $this->orderBy = " order by ($order)";
         return $this;
     }
 
-    function random(): DB_Select
+    /**
+     * @return $this
+     */
+    public function random(): DB_Select
     {
         $this->orderBy = ' order by RAND()';
         return $this;
@@ -160,7 +183,7 @@ class DB_Select
      *
      * @return $this
      */
-    function ASC(): DB_Select
+    public function ASC(): DB_Select
     {
         if ($this->orderBy) {
             $this->_asc = ' ASC';
@@ -173,7 +196,7 @@ class DB_Select
      *
      * @return $this
      */
-    function DESC(): DB_Select
+    public function DESC(): DB_Select
     {
         if ($this->orderBy) {
             $this->_asc = "";
@@ -187,7 +210,7 @@ class DB_Select
      * @param int $limit
      * @return $this
      */
-    function limit(int $limit): DB_Select
+    public function limit(int $limit): DB_Select
     {
         $this->_limit = " LIMIT {$limit}";
         return $this;
@@ -197,53 +220,21 @@ class DB_Select
      * @param int $offset
      * @return $this
      */
-    function offset(int $offset): DB_Select
+    public function offset(int $offset): DB_Select
     {
         $this->_offset = " OFFSET {$offset}";
         return $this;
     }
-    /**
-     * @return array
-     */
-    private function select(): array
-    {
-        $fields = $this->_fields['keys'] ?? '*';
-        $WHERE = $this->_where['field'] ?? '';
-        $params = $this->_where['value'] ?? [];
-        //
-        $sql = "SELECT " . $fields . " FROM " . " $this->table " . $WHERE . $this->groupBY . $this->orderBy . $this->_dsc . $this->_asc . $this->_limit . $this->_offset;
-        $this->query($sql, $params);
-        return [
-            'sql' => $sql,
-            'params' => $params
-        ];
-    }
 
     /**
      *
+     * @return array|int
+     * execute query to get result
      */
-    private function count_total(): array
+    public function result()
     {
-        $WHERE = $this->_where['field'] ?? '';
-        $params = $this->_where['value'] ?? [];
-        $sql = "SELECT COUNT(*) as count FROM {$this->table} " . $WHERE;
-        return [
-            'sql' => $sql,
-            'params' => $params
-        ];
-    }
-
-    /**
-     *
-     * @param string $sql
-     * @param array $params
-     */
-    private function query(string $sql, array $params = [])
-    {
-        $q = $this->executeQuery($this->_pdo, $sql, $params);
-        $this->_results = $q['result'];
-        $this->_count = $q['count']??0;
-        $this->_error = $q['error'];
+        $this->build();
+        return $this->action == 'count' ? $this->result[0] : $this->result;
     }
 
     /**
@@ -262,20 +253,32 @@ class DB_Select
 
     /**
      *
-     * @return array|int
-     * execute query to get result
      */
-    function result()
+    private function count_total(): array
     {
-        $this->build();
-        return $this->action == 'count' ? $this->_results[0] : $this->_results;
+        $WHERE = $this->_where['field'] ?? '';
+        $params = $this->_where['value'] ?? [];
+        $sql = "SELECT COUNT(*) as count FROM {$this->table} " . $WHERE;
+        return [
+            'sql' => $sql,
+            'params' => $params
+        ];
     }
 
     /**
-     * @return mixed
+     * @return array
      */
-    function error()
+    private function select(): array
     {
-        return $this->_error;
+        $fields = $this->_fields['keys'] ?? '*';
+        $WHERE = $this->_where['field'] ?? '';
+        $params = $this->_where['value'] ?? [];
+        //
+        $sql = "SELECT " . $fields . " FROM " . " $this->table " . $WHERE . $this->groupBY . $this->orderBy . $this->_dsc . $this->_asc . $this->_limit . $this->_offset;
+        $this->query($sql, $params);
+        return [
+            'sql' => $sql,
+            'params' => $params
+        ];
     }
 }

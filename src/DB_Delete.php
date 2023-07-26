@@ -8,32 +8,43 @@
 
 namespace Wepesi\App;
 
-use Wepesi\App\Traits\BuildQuery;
+use PDO;
+use Wepesi\App\Provider\DbProvider;
 
-class DB_Delete
+/**
+ *
+ */
+class DB_Delete extends DbProvider
 {
-    private \PDO $pdo;
+    /**
+     * @var string
+     */
     private string $table;
+    /**
+     * @var array
+     */
     private array $where;
-    private ?string $_error;
-    private array $_results;
-    use BuildQuery;
 
-    function __construct(\PDO $pdo, string $table)
+
+    /**
+     * @param PDO $pdo
+     * @param string $table
+     */
+    public function __construct(PDO $pdo, string $table)
     {
         $this->table = $table;
         $this->pdo = $pdo;
         $this->where = [];
-        $this->_results = $this->_error =[];
+        $this->result = [];
     }
 
     /**
      * @param array $where
      * @return $this
      */
-    function where(array $where = []): DB_Delete
+    public function where(array $where = []): DB_Delete
     {
-        if (count($where)) {
+        if (count($where) > 0) {
             $params = [];
             /**
              * defined comparion operator to avoid error while assing operation witch does not exist
@@ -83,16 +94,13 @@ class DB_Delete
     }
 
     /**
-     * @param $sql
-     * @param array $params
-     *
-     * this module is use to execute sql request
+     * @return array return result after a request select
+     * return result after a request select
      */
-    private function query($sql, array $params = [])
+    public function result(): array
     {
-        $q = $this->executeQuery($this->pdo, $sql, $params);
-        $this->_results = $q['result'];
-        $this->_error = $q['error'];
+        $this->delete();
+        return $this->result;
     }
 
     /**
@@ -107,21 +115,4 @@ class DB_Delete
         $this->query($sql, $params);
     }
 
-    /**
-     * @return array return result after a request select
-     * return result after a request select
-     */
-    function result(): array
-    {
-        $this->delete();
-        return $this->_results;
-    }
-
-    /**
-     * @return string|null
-     */
-    function error(): ?string
-    {
-        return $this->_error;
-    }
 }

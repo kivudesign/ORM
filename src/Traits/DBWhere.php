@@ -2,10 +2,18 @@
 
 namespace Wepesi\App\Traits;
 
+/**
+ *
+ */
 trait DBWhere
 {
-    function condition(array $where = []){
-        if(count($where)==0) return;
+    /**
+     * @param array $where
+     * @return array|void
+     */
+    public function condition(array $where = [])
+    {
+        if (count($where) == 0) return;
         $params = [];
         /**
          * defined comparion operator to avoid error while assing operation witch does not exist
@@ -33,11 +41,11 @@ trait DBWhere
             }
             // check the field exist and defined by default one
             $where_field_name = strlen(trim($WhereField[0])) > 0 ? trim($WhereField[0]) : "id";
-            $jointure_Where_Condition .=  $notComparison.$where_field_name.$defaultComparison." ? ";
+            $jointure_Where_Condition .= $notComparison . $where_field_name . $defaultComparison . " ? ";
             $where_field_value = $WhereField[2] ?? null;
             array_push($fieldValue, $where_field_value);
-//
-            $params[$where_field_name]=$where_field_value;
+
+            $params[$where_field_name] = $where_field_value;
             if ($lastIndexWhere < $whereLen) {
                 if ($default_logical_operator != "not") {
                     $jointure_Where_Condition .= $default_logical_operator;
@@ -46,7 +54,7 @@ trait DBWhere
             $lastIndexWhere++;
         }
         return [
-            "field" => "WHERE ".$jointure_Where_Condition,
+            "field" => "WHERE " . $jointure_Where_Condition,
             "value" => $fieldValue,
             "params" => $params
         ];
