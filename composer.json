@@ -17,7 +17,8 @@
     ],
     "require": {
         "php": ">=7.4",
-      "ext-pdo": "*"
+      "ext-pdo": "*",
+        "wepesi/optionsresolver": "^0.2.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5"

@@ -4,8 +4,53 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4dc145cdec3e121b58987538afcc1722",
-    "packages": [],
+    "content-hash": "cf319599d1721b9ee501d7eac6225bd6",
+    "packages": [
+        {
+            "name": "wepesi/optionsresolver",
+            "version": "v0.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/bim-g/OptionsResolver.git",
+                "reference": "6b60f6e8a86b0335d0f0c6dedb217684ddd22e82"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/bim-g/OptionsResolver/zipball/6b60f6e8a86b0335d0f0c6dedb217684ddd22e82",
+                "reference": "6b60f6e8a86b0335d0f0c6dedb217684ddd22e82",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Wepesi\\Resolver\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "bim-g",
+                    "email": "ibmussafb@gmail.com"
+                }
+            ],
+            "description": "The OptionsResolver component helps you configure objects with option arrays. It supports default values, option constraints and lazy options.",
+            "support": {
+                "docs": "https://github.com/bim-g/OptionsResolver",
+                "email": "ibmussfb@gmail.com",
+                "forum": "https://github.com/bim-g/OptionsResolver",
+                "issues": "https://github.com/bim-g/OptionsResolver/issues",
+                "source": "https://github.com/bim-g/OptionsResolver",
+                "wiki": "https://github.com/bim-g/OptionsResolver"
+            },
+            "time": "2023-04-05T12:09:04+00:00"
+        }
+    ],
     "packages-dev": [
         {
             "name": "doctrine/instantiator",
@@ -2030,7 +2075,8 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=7.4"
+        "php": ">=7.4",
+        "ext-pdo": "*"
     },
     "platform-dev": [],
     "plugin-api-version": "2.2.0"
