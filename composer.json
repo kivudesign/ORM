@@ -3,7 +3,7 @@
     "description": "simple orm build for php application",
     "type": "library",
     "license": "Apache-2.0",
-    "minimum-stability": "beta",
+    "minimum-stability": "dev",
     "autoload": {
         "psr-4": {
             "Wepesi\\App\\": "src/"
