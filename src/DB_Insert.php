@@ -5,35 +5,42 @@
  * Ibrahim Mussa
  * https://github.com/bim-g
  */
+
 namespace Wepesi\App;
 
-use Wepesi\App\Traits\BuildQuery;
+use Wepesi\App\Provider\DbProvider;
 
-class DB_Insert
+/**
+ *
+ */
+class DB_Insert extends DbProvider
 {
+    /**
+     * @var string
+     */
     private string $table;
-    private \PDO $pdo;
-    private array $_fields;
-    private string $_error;
-    private array $_results;
-    private int $lastID;
-    use BuildQuery;
 
-    function __construct(\PDO $pdo, string $table)
+    /**
+     * @var array
+     */
+    private array $_fields;
+
+    /**
+     * @param \PDO $pdo
+     * @param string $table
+     */
+    public function __construct(\PDO $pdo, string $table)
     {
         $this->table = $table;
         $this->pdo = $pdo;
         $this->_fields = [];
-        $this->_results = [];
-        $this->lastID = 0;
-        $this->_error = '';
     }
 
     /**
      * @param array $fields
      * @return $this
      */
-    function field(array $fields): DB_Insert
+    public function field(array $fields): DB_Insert
     {
         if (count($fields) && !$this->_fields) {
             $field_key_position = 0;
@@ -62,17 +69,13 @@ class DB_Insert
     }
 
     /**
-     * @param string $sql
-     * @param array $params
-     * @return void
-     * this module is use to execute sql request
+     * @return array
+     * return result after a request select
      */
-    private function query(string $sql, array $params = [])
+    public function result(): array
     {
-        $q = $this->executeQuery($this->pdo, $sql, $params);
-        $this->_results = $q['result'];
-        $this->_error = $q['error']??"";
-        $this->lastID = $q['lastID']??0;
+        $this->insert();
+        return $this->result;
     }
 
     /**
@@ -88,27 +91,9 @@ class DB_Insert
     }
 
     /**
-     * @return array
-     * return result after a request select
-     */
-    function result(): array
-    {
-        $this->insert();
-        return $this->_results;
-    }
-
-    /**
-     * @return string
-     */
-    function error(): string
-    {
-        return $this->_error;
-    }
-
-    /**
      * @return int
      */
-    function lastId(): int
+    public function lastId(): int
     {
         return $this->lastID;
     }

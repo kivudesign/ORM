@@ -5,10 +5,20 @@
  * Ibrahim Mussa
  * https://github.com/bim-g
  */
+
 namespace Wepesi\App\Traits;
 
+/**
+ *
+ */
 trait BuildQuery
 {
+    /**
+     * @param \PDO $pdo
+     * @param string $sql
+     * @param array $params
+     * @return array
+     */
     protected function executeQuery(\PDO $pdo, string $sql, array $params = []): array
     {
         try {
@@ -28,15 +38,23 @@ trait BuildQuery
             }
             $query_result = $query->execute();
 
-            if($query_result){
+            if ($query_result) {
                 $data_result['result'] = ['query_result' => true];
-                if (strchr(strtolower($sql), 'update') || strchr(strtolower($sql), 'select')) {
-                    $data_result['result'] = $query->fetchAll(\PDO::FETCH_OBJ);
-                    $data_result['count'] = $query->rowCount();
-                } else if (strchr(strtolower($sql), 'insert into')) {
-                    $data_result['lastID'] = $pdo->lastInsertId();
-                } else if (strchr(strtolower($sql), 'delete')) {
-                    $data_result['result'] = ['delete' => true];
+                $string = explode(' ',strtolower($sql));
+                switch ($string[0]){
+                    case 'select' :
+                        $data_result['result'] = $query->fetchAll(\PDO::FETCH_OBJ);
+                        $data_result['count'] = $query->columnCount();
+                        break;
+                    case 'insert' :
+                        $data_result['lastID'] = $pdo->lastInsertId();
+                        break;
+                    case 'update':
+                        $data_result['count'] = $query->rowCount();
+                        break;
+                    case 'delete':
+                        $data_result['result'] = ['delete' => true];
+                        break;
                 }
             }
             return $data_result;
