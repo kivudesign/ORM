@@ -145,8 +145,6 @@ class DB_Select extends DbProvider
                 'keys' => '' . implode(',', $keys) . '',
                 'values' => $values
             ];
-        } else {
-            $this->_fields = '*';
         }
         return $this;
     }
@@ -283,5 +281,4 @@ class DB_Select extends DbProvider
             'params' => $params
         ];
     }
-
 }
