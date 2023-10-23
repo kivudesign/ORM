@@ -1,16 +1,15 @@
 <?php
-/**
- * Wepesi ORM
- * DB_Update
- * Ibrahim Mussa
- * https://github.com/bim-g
+/*
+ * wepesi_ORM
+ * DB_Update.php
+ * https://github.com/bim-g/Wepesi-ORM
+ * Copyright (c) 2023.
  */
 
 namespace Wepesi\App;
 
+use Wepesi\App\Provider\Contract\WhereBuilderInterface;
 use Wepesi\App\Provider\DbProvider;
-use Wepesi\App\Traits\BuildQuery;
-use Wepesi\App\WhereQueryBuilder\WhereBuilder;
 
 /**
  *
@@ -46,13 +45,12 @@ class DB_Update extends DbProvider
     }
 
     /**
-     * @param WhereBuilder $where_builder
+     * @param WhereBuilderInterface $where_builder
      * @return $this
      */
-    public function where(WhereBuilder $where_builder): DB_Update
+    public function where(WhereBuilderInterface $where_builder): DB_Update
     {
-        $where = $where_builder->generate();
-        $this->where = $this->condition($where);
+        $this->_where = $this->condition($where_builder);
         return $this;
     }
     /**
@@ -112,7 +110,7 @@ class DB_Update extends DbProvider
         $fields = $this->_fields['keys'];
         $field_params = $this->_fields['params'] ?? [];
         $params = array_merge($field_params, $where_params);
-        //generate the sql query to be execute
+        //generate the sql query to be executed
         $sql = "UPDATE $this->table SET $fields  $where";
         $this->query($sql, $params);
     }

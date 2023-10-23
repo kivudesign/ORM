@@ -1,8 +1,8 @@
 <?php
 $db = $db ?? [];
-$where = ['id', "=", 12];
+$where = (new \Wepesi\App\WhereQueryBuilder\WhereBuilder())->orOption((new \Wepesi\App\WhereQueryBuilder\WhereConditions('id'))->isEqualTo(12));
 try {
-    $res = $db->delete("message")->where([]);
+    $res = $db->delete("message")->where($where);
     if ($db->error()) {
         throw new \Exception($db->error());
     }

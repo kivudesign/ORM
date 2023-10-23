@@ -1,17 +1,17 @@
 <?php
-/**
- * Wepesi ORM
- * DB_Delete
- * Ibrahim Mussa
- * https://github.com/bim-g
+/*
+ * wepesi_ORM
+ * DB_Delete.php
+ * https://github.com/bim-g/Wepesi-ORM
+ * Copyright (c) 2023.
  */
 
 namespace Wepesi\App;
 
 use PDO;
+use Wepesi\App\Provider\Contract\WhereBuilderInterface;
 use Wepesi\App\Provider\DbProvider;
-use Wepesi\App\Traits\DBWhere;
-use Wepesi\App\WhereQueryBuilder\WhereBuilder;
+use Wepesi\App\Traits\DBWhereCondition;
 
 /**
  *
@@ -26,7 +26,7 @@ class DB_Delete extends DbProvider
      * @var array
      */
     private array $where;
-    use DBWhere;
+    use DBWhereCondition;
 
     /**
      * @param PDO $pdo
@@ -41,13 +41,12 @@ class DB_Delete extends DbProvider
     }
 
     /**
-     * @param WhereBuilder $where_builder
+     * @param WhereBuilderInterface $where_builder
      * @return $this
      */
-    public function where(WhereBuilder $where_builder): DB_Delete
+    public function where(WhereBuilderInterface $where_builder): DB_Delete
     {
-        $where = $where_builder->generate();
-        $this->where = $this->condition($where);
+        $this->where = $this->condition($where_builder);
         return $this;
     }
 
@@ -72,5 +71,4 @@ class DB_Delete extends DbProvider
         $sql = "DELETE FROM $this->table $where";
         $this->query($sql, $params);
     }
-
 }
