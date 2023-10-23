@@ -1,14 +1,16 @@
 <?php
-/**
- * Wepesi ORM
- * DB_Update
- * Ibrahim Mussa
- * https://github.com/bim-g
+/*
+ * wepesi_ORM
+ * DB_Select.php
+ * https://github.com/bim-g/Wepesi-ORM
+ * Copyright (c) 2023.
  */
 
 namespace Wepesi\App;
 
+use Wepesi\App\Provider\Contract\WhereBuilderInterface;
 use Wepesi\App\Provider\DbProvider;
+use Wepesi\App\Traits\DBWhereCondition;
 
 /**
  *
@@ -59,67 +61,13 @@ class DB_Select extends DbProvider
     }
 
     /**
-     * @param array $params
+     * @param WhereBuilderInterface $where_builder
      * @return $this
-     * @throws \Exception
      */
-    public function where(array $params = []): DB_Select
+    public function where(WhereBuilderInterface $where_builder): DB_Select
     {
-        if (count($params)) {
-            // $params = [];
-            //
-            /**
-             * defined comparison operator to avoid error while Passing operation witch does not exist
-             */
-            $comparisonOperator = ['<', '<=', '>', '>=', '<>', '!=', 'like'];
-            // defined logical operator
-            $logicalOperator = ['or', 'not'];
-            // check if the array is multidimensional array
-            $key = array_keys($params);
-            $key_exist = is_string($key[0]);
-            if ($key_exist) {
-                throw new \Exception('bad format, for where data');
-            }
-            $where = is_array($params[0]) ? $params : [$params];
-            $whereLen = count($where);
-            //
-            $jointuresWhereCondition = '';
-            $defaultComparison = '=';
-            $lastIndexWhere = 1;
-            $fieldValue = [];
-            //
-            foreach ($where as $WhereField) {
-                $defaultLogical = ' AND ';
-                $notComparison = null;
-                // check if there is a logical operator `or`||`and`
-                if (isset($WhereField[3])) {
-                    // check id the defined operation exist in our defined tables
-                    $defaultLogical = in_array(strtolower($WhereField[3]), $logicalOperator) ? $WhereField[3] : ' and ';
-                    if ($defaultLogical === 'not') {
-                        $notComparison = ' not ';
-                    }
-                }
-                // check the field exist and defined by default one
-                $_WhereField = strlen($WhereField[0]) > 0 ? $WhereField[0] : 'id';
-                // check if comparison  exist on the array
-                $defaultComparison = in_array($WhereField[1], $comparisonOperator) ? $WhereField[1] : '=';
-                $jointuresWhereCondition .= " {$notComparison} {$_WhereField} {$defaultComparison}  ? ";
-                $valueTopush = isset($WhereField[2]) ? $WhereField[2] : null;
-                array_push($fieldValue, $valueTopush);
-                if ($lastIndexWhere < $whereLen) {
-                    if ($defaultLogical != 'not') {
-                        $jointuresWhereCondition .= $defaultLogical;
-                    }
-                }
-                $lastIndexWhere++;
-            }
-            $this->_where = [
-                'field' => " WHERE {$jointuresWhereCondition} ",
-                'value' => $fieldValue
-            ];
-        }
+        $this->_where = $this->condition($where_builder);
         return $this;
-
     }
 
     /**

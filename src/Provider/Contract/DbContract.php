@@ -4,5 +4,5 @@ namespace Wepesi\App\Provider\Contract;
 
 interface DbContract
 {
-    function error() : string;
+    public function error() : string;
 }

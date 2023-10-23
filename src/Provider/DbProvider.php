@@ -2,36 +2,39 @@
 
 namespace Wepesi\App\Provider;
 
+use PDO;
 use Wepesi\App\Provider\Contract\DbContract;
 use Wepesi\App\Traits\BuildQuery;
+use Wepesi\App\Traits\DBWhereCondition;
 
 /**
  *
  */
-abstract class DbProvider Implements DbContract
+abstract class DbProvider implements DbContract
 {
     /**
      * @var string
      */
     protected string $_error = '';
     /**
-     * @var \PDO
+     * @var PDO
      */
-    protected \PDO $pdo ;
+    protected PDO $pdo;
     /**
      * @var array
      */
-    protected array $result = [] ;
+    protected array $result = [];
     /**
      * @var int
      */
-    protected int $lastID = 0 ;
+    protected int $lastID = 0;
     /**
      * @var int
      */
     protected int $_count;
 
     use BuildQuery;
+    use DBWhereCondition;
 
     /**
      * @return string
@@ -43,7 +46,7 @@ abstract class DbProvider Implements DbContract
 
     /**
      * @param string $sql
-     * @param array $params
+     * @param array $values
      * @return void
      * this module is use to execute sql request
      */

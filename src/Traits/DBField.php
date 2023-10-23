@@ -14,9 +14,9 @@ trait DBField
      * @param string $action
      * @return array|string
      */
-    public function field_params(array $fields = [], string $action)
+    public function field_params(array $fields, string $action)
     {
-        if (count($fields) && !$this->_fields && (strtolower($action) != "insert" || strtolower($action) != "update")) {
+        if (count($fields) > 0 && (strtolower($action) != "insert" || strtolower($action) != "update")) {
             $keys = $fields;
             $params = $keys;
             $x = 1;

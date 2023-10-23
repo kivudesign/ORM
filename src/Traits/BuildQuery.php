@@ -8,18 +8,21 @@
 
 namespace Wepesi\App\Traits;
 
+use PDO;
+use PDOException;
+
 /**
  *
  */
 trait BuildQuery
 {
     /**
-     * @param \PDO $pdo
+     * @param PDO $pdo
      * @param string $sql
      * @param array $params
      * @return array
      */
-    protected function executeQuery(\PDO $pdo, string $sql, array $params = []): array
+    protected function executeQuery(PDO $pdo, string $sql, array $params = []): array
     {
         try {
             $data_result = [
@@ -40,11 +43,11 @@ trait BuildQuery
 
             if ($query_result) {
                 $data_result['result'] = ['query_result' => true];
-                $string = explode(' ',strtolower($sql));
-                switch ($string[0]){
+                $string = explode(' ', strtolower($sql));
+                switch ($string[0]) {
                     case 'select' :
-                        $data_result['result'] = $query->fetchAll(\PDO::FETCH_OBJ);
-                        $data_result['count'] = $query->columnCount();
+                        $data_result['result'] = $query->fetchAll(PDO::FETCH_OBJ);
+                        $data_result['count'] = $query->rowCount();
                         break;
                     case 'insert' :
                         $data_result['lastID'] = $pdo->lastInsertId();
@@ -58,7 +61,7 @@ trait BuildQuery
                 }
             }
             return $data_result;
-        } catch (\PDOException $ex) {
+        } catch (PDOException $ex) {
             $data_result['error'] = $ex->getmessage();
             return $data_result;
         }
