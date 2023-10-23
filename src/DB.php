@@ -8,6 +8,10 @@
 
 namespace Wepesi\App;
 
+use Closure;
+use Exception;
+use PDO;
+use PDOException;
 use Wepesi\App\Traits\BuildQuery;
 use Wepesi\Resolver\Option;
 use Wepesi\Resolver\OptionsResolver;
@@ -42,9 +46,9 @@ class DB
      */
     private int $_lastID;
     /**
-     * @var \PDO
+     * @var PDO
      */
-    private \PDO $pdo;
+    private PDO $pdo;
     /**
      * @var string
      */
@@ -65,7 +69,7 @@ class DB
      * @param string $user_name
      * @param string $password
      */
-    private function __construct(string $host = "", string $db_name = "", string $user_name = "", string $password = "",string $port)
+    private function __construct(string $host, string $db_name, string $port, string $user_name, string $password = "")
     {
         try {
             $this->_results = [];
@@ -74,13 +78,13 @@ class DB
             $this->_count = 0;
             $this->db_name = $db_name;
             //
-            $this->pdo = new \PDO("mysql:host=" . $host . ";port=" . $port . ";dbname=" . $db_name . ";charset=utf8mb4", $user_name, $password);
-            $this->pdo->setAttribute(\PDO::MYSQL_ATTR_INIT_COMMAND, 'SET NAMES utf8');
-            $this->pdo->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
-            $this->pdo->setAttribute(\PDO::ATTR_PERSISTENT, true);
-            $this->pdo->setAttribute(\PDO::MYSQL_ATTR_FOUND_ROWS, true);
-            $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-        } catch (\PDOException $ex) {
+            $this->pdo = new PDO("mysql:host=" . $host . ";port=" . $port . ";dbname=" . $db_name . ";charset=utf8mb4", $user_name, $password);
+            $this->pdo->setAttribute(PDO::MYSQL_ATTR_INIT_COMMAND, 'SET NAMES utf8');
+            $this->pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+            $this->pdo->setAttribute(PDO::ATTR_PERSISTENT, true);
+            $this->pdo->setAttribute(PDO::MYSQL_ATTR_FOUND_ROWS, true);
+            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        } catch (PDOException $ex) {
             echo $ex->getMessage();
             die();
         }
@@ -98,25 +102,25 @@ class DB
                 (new Option('db_name')),
                 (new Option('username')),
                 (new Option('password')),
-                (new Option('port'))->setDefaultValue('3309')
+                (new Option('port'))->setDefaultValue('3306')
             ]);
-            $option = $resolver->resolve($config);
-            if (isset($options['InvalidArgumentException'])){
-                throw new \Exception($options['InvalidArgumentException']);
+            $options = $resolver->resolve($config);
+            if (isset($options['InvalidArgumentException'])) {
+                throw new Exception($options['InvalidArgumentException']);
             }
-            $hot = $config["host"];
+            $hot = $config["host"] == 'localhost' ? '127.0.0.1' : $config['host'];
             $db_name = $config["db_name"];
             $user_name = $config["username"];
             $password = $config["password"];
-            $port = $config["port"] ?? '3309';
+            $port = $config["port"] ?? '3306';
 
             if (!isset(self::$_instance)) {
-                self::$_instance = new DB($hot, $db_name, $user_name, $password, $port);
+                self::$_instance = new DB($hot, $db_name,$port, $user_name, $password);
             }
             return self::$_instance;
 
-        } catch (\Exception $ex) {
-            print_r(["exception" => $ex->getMessage()]);
+        } catch (Exception $ex) {
+            print_r($ex);
             die();
         }
     }
@@ -124,7 +128,7 @@ class DB
     /**
      * @param string $table_name
      * @return DB_Select
-     * @throws \Exception
+     * @throws Exception
      */
     public function get(string $table_name): DB_Select
     {
@@ -134,12 +138,12 @@ class DB
     /**
      * @param string $table_name table name of the table where to get information
      * @param string $action action this is the type of action tu do while want to do a request
-     * @throws \Exception
+     * @throws Exception
      */
     private function select_option(string $table_name, string $action = "select"): ?DB_Select
     {
         if (strlen($table_name) < 1) {
-            throw new \Exception("table name should be a string");
+            throw new Exception("table name should be a string");
         }
         $this->query_transaction = new DB_Select($this->pdo, $table_name, $action);
         return $this->query_transaction;
@@ -154,6 +158,18 @@ class DB
     public function insert(string $table): DB_Insert
     {
         $this->query_transaction = new DB_Insert($this->pdo, $table);
+        return $this->query_transaction;
+    }
+
+    /**
+     * @param string $table this is the name of the table where to get information
+     * @return DB_Insert
+     *
+     * this method will help create new row data
+     */
+    public function multipleInsert(string $table): DB_Insert
+    {
+        $this->query_transaction = new DB_Insert($this->pdo, $table, true);
         return $this->query_transaction;
     }
 
@@ -216,7 +232,7 @@ class DB
     /**
      * @param string $table_name
      * @return DB_Select
-     * @throws \Exception
+     * @throws Exception
      */
     public function count(string $table_name): DB_Select
     {
@@ -224,16 +240,16 @@ class DB
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      * implement transaction with callback function to manage all at once
      */
-    public function transaction(\Closure $callable)
+    public function transaction(Closure $callable)
     {
         try {
             $this->pdo->beginTransaction();
             $callable($this);
             $this->pdo->commit();
-        } catch (\Exception $ex) {
+        } catch (Exception $ex) {
             if ($this->pdo->inTransaction()) {
                 $this->pdo->rollBack();
             }
@@ -269,7 +285,7 @@ class DB
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      * convert your database  ENGINE to MyISAM in case you want your database to support transactions.
      */
     public function convertMyISAMToInnoDB()
@@ -283,7 +299,7 @@ class DB
                 $sql = "ALTER TABLE $table->TABLE_NAME ENGINE = ?";
                 $this->query($sql, $params);
             }
-        } catch (\Exception $ex) {
+        } catch (Exception $ex) {
             print_r($ex);
         }
     }

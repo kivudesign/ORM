@@ -6,8 +6,10 @@
  * https://github.com/bim-g
  */
 
+
 namespace Wepesi\App;
 
+use PDO;
 use Wepesi\App\Provider\DbProvider;
 
 /**
@@ -16,24 +18,24 @@ use Wepesi\App\Provider\DbProvider;
 class DB_Insert extends DbProvider
 {
     /**
-     * @var string
-     */
-    private string $table;
-
-    /**
      * @var array
      */
     private array $_fields;
+    /**
+     * @var bool
+     */
+    private bool $is_multiple;
 
     /**
-     * @param \PDO $pdo
+     * @param PDO $pdo
      * @param string $table
      */
-    public function __construct(\PDO $pdo, string $table)
+    public function __construct(PDO $pdo, string $table, bool $multiple = false)
     {
         $this->table = $table;
         $this->pdo = $pdo;
         $this->_fields = [];
+        $this->is_multiple = $multiple;
     }
 
     /**
@@ -42,19 +44,42 @@ class DB_Insert extends DbProvider
      */
     public function field(array $fields): DB_Insert
     {
-        if (count($fields) && !$this->_fields) {
-            $field_key_position = 0;
+        if (count($fields) > 0) {
             $keys = array_keys($fields);
-            $values = null;
-            $trim_key = [];
-            foreach ($fields as $field) {
-                $values .= '? ';
-                if (count($fields) > ($field_key_position + 1)) {
-                    $values .= ', ';
-                }
+            $count_row = 1;
+            if (isset($fields[0]) && is_array($fields[0]) && $this->is_multiple){
+                $keys = array_keys($fields[0]);
+                $count_row = count($fields);
                 //remove white space around the field name
-                $trim_key[] = trim($keys[$field_key_position]);
-                $field_key_position++;
+            }
+            $trim_key = array_map(function($item){
+                return trim($item);
+            },$keys);
+            $field_params = [];
+
+            $values = null;
+            $index_row = 1;
+            $count_fields = count($fields);
+            for ($i=0; $i < $count_row; $i++) {
+                $row_fields = $fields;
+                $index_key = 1;
+                if (isset($fields[0]) && is_array($fields[0]) && $this->is_multiple){
+                    $row_fields = $fields[$i];
+                }
+                $values .= '(';
+                foreach ($row_fields as $field_value) {
+                    $values .= '? ';
+                    if ($count_fields > $index_key) {
+                        $values .= ', ';
+                    }
+                    $field_params[] = $field_value;
+                    $index_key++;
+                }
+                $values .= ')';
+                 if ($index_row < $count_row) {
+                     $values .=',';
+                 }
+                $index_row++;
             }
 
             $implode_keys = '`' . implode('`,`', $trim_key) . '`';
@@ -62,7 +87,7 @@ class DB_Insert extends DbProvider
             $this->_fields = [
                 'keys' => $implode_keys,
                 'values' => $values,
-                'params' => $fields
+                'params' => $field_params
             ];
         }
         return $this;
@@ -86,7 +111,7 @@ class DB_Insert extends DbProvider
         $fields = $this->_fields['keys'];
         $values = $this->_fields['values'];
         $params = $this->_fields['params'];
-        $sql = "INSERT INTO $this->table ($fields) VALUES ($values)";
+        $sql = "INSERT INTO $this->table ($fields) VALUES $values";
         $this->query($sql, $params);
     }
 
